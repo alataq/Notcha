@@ -1,0 +1,48 @@
+{
+  "name": "notcha",
+  "version": "0.1.0",
+  "description": "A lightweight window management library using native X11 bindings via Zig and TypeScript",
+  "module": "src/index.ts",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "test": "bun run test.ts",
+    "build": "zig build -Doptimize=ReleaseSafe",
+    "dev": "zig build && bun run test.ts",
+    "prepublishOnly": "bash build.sh"
+  },
+  "files": [
+    "src/**/*",
+    "zig-out/lib/**/*",
+    "build.zig",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "window",
+    "windowing",
+    "x11",
+    "graphics",
+    "zig",
+    "native",
+    "ffi",
+    "bun",
+    "linux"
+  ],
+  "author": "Alataq",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "engines": {
+    "bun": ">=1.0.0",
+    "zig": ">=0.11.0"
+  }
+}

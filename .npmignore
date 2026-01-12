@@ -1,0 +1,35 @@
+# Development files
+test.ts
+build_test.sh
+.vscode/
+.idea/
+*.log
+*.backup
+
+# Build artifacts (keep only zig-out/lib)
+.zig-cache/
+build/
+dist/
+*.o
+*.obj
+*.pdb
+
+# Git
+.git/
+.gitignore
+
+# CI/CD
+.github/
+
+# Documentation source files
+docs/
+
+# Node modules
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Bun specific
+bun.lock
