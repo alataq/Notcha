@@ -37,13 +37,20 @@ export function createMainMenu(
         window.write(centerX - 80, 40, "Notcha Test Suite", BLACK);
         window.write(centerX - 100, 70, "Click a button to open demo", GRAY);
         
-        // Create buttons
+        // Button dimensions
+        const buttonWidth = Math.min(300, w - 100);
+        const buttonHeight = 50;
+        const buttonX = Math.floor((w - buttonWidth) / 2);
+        const spacing = 70;
+        const startY = 120;
+        
+        // Create buttons centered based on window size
         buttons = [
-            { x: 100, y: 120, width: 300, height: 50, label: "Graphics Demo", action: onGraphicsDemo },
-            { x: 100, y: 190, width: 300, height: 50, label: "Text Demo", action: onTextDemo },
-            { x: 100, y: 260, width: 300, height: 50, label: "Color Demo", action: onColorDemo },
-            { x: 100, y: 330, width: 300, height: 50, label: "Keyboard Demo", action: onKeyboardDemo },
-            { x: 100, y: 400, width: 300, height: 50, label: "Mouse Demo", action: onMouseDemo },
+            { x: buttonX, y: startY, width: buttonWidth, height: buttonHeight, label: "Graphics Demo", action: onGraphicsDemo },
+            { x: buttonX, y: startY + spacing, width: buttonWidth, height: buttonHeight, label: "Text Demo", action: onTextDemo },
+            { x: buttonX, y: startY + spacing * 2, width: buttonWidth, height: buttonHeight, label: "Color Demo", action: onColorDemo },
+            { x: buttonX, y: startY + spacing * 3, width: buttonWidth, height: buttonHeight, label: "Keyboard Demo", action: onKeyboardDemo },
+            { x: buttonX, y: startY + spacing * 4, width: buttonWidth, height: buttonHeight, label: "Mouse Demo", action: onMouseDemo },
         ];
         
         // Draw buttons
@@ -65,14 +72,16 @@ export function createMainMenu(
                 window.draw(button.x + button.width - 1, y, BLUE);
             }
             
-            // Button label
-            const labelX = button.x + (button.width / 2) - (button.label.length * 4);
-            const labelY = button.y + (button.height / 2) - 5;
+            // Button label - centered in button
+            const labelX = button.x + Math.floor((button.width - button.label.length * 8) / 2);
+            const labelY = button.y + Math.floor((button.height - 10) / 2);
             window.write(labelX, labelY, button.label, BLACK);
         }
         
-        // Instructions
-        window.write(50, h - 40, "Each demo window is independent", GRAY);
+        // Instructions - centered at bottom
+        const instructionText = "Each demo window is independent";
+        const instructionX = Math.floor((w - instructionText.length * 8) / 2);
+        window.write(instructionX, h - 40, instructionText, GRAY);
         
         window.flush();
     }
