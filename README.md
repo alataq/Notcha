@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.3.1-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -13,6 +13,7 @@
 🪟 **Multiple Windows** - Create and manage multiple windows simultaneously  
 🎯 **Event Handling** - Window close callbacks and resize/redraw detection  
 ⌨️ **Keyboard Input** - Full keyboard event support with focus tracking  
+🖱️ **Mouse Input** - Complete mouse support (clicks, movement, scroll)  
 📦 **Zero Dependencies** - Pre-built native binary included, ready to use  
 ⚡ **Double Buffering** - Smooth, flicker-free rendering with automatic framebuffer
 
@@ -201,6 +202,10 @@ if (focused) {
 
 Notcha supports both global keyboard events (via `app.keyboard`) and per-window keyboard events (via `window.keyboard`). Per-window events only fire when that specific window has focus, making it easy to handle keyboard input for individual windows.
 
+### Mouse
+
+Notcha provides full mouse support with both global mouse events (via `app.mouse`) and per-window mouse events (via `window.mouse`). Per-window events only fire when that specific window has focus, making it easy to handle mouse input for individual windows.
+
 #### Per-Window Keyboard (Recommended)
 
 #### `window.keyboard.onKeyPress(callback: (event: KeyEvent) => void): void`
@@ -263,6 +268,88 @@ interface KeyEvent {
 - Function keys: `"F1"` through `"F12"`
 - Modifiers: `"Shift"`, `"Control"`, `"Alt"`, `"Meta"`
 - Other: `"Delete"`, `"Home"`, `"End"`, `"PageUp"`, `"PageDown"`, `"Insert"`, `"CapsLock"`
+
+#### Per-Window Mouse (Recommended)
+
+#### `window.mouse.onMousePress(callback: (event: MouseEvent) => void): void`
+Registers a callback for mouse button press events on this specific window. Only fires when this window is focused.
+
+```typescript
+window.mouse.onMousePress((event) => {
+    console.log(`Mouse pressed: ${event.button} at (${event.x}, ${event.y})`);
+});
+```
+
+#### `window.mouse.onMouseRelease(callback: (event: MouseEvent) => void): void`
+Registers a callback for mouse button release events on this specific window.
+
+```typescript
+window.mouse.onMouseRelease((event) => {
+    console.log(`Mouse released: ${event.button} at (${event.x}, ${event.y})`);
+});
+```
+
+#### `window.mouse.onMouseMove(callback: (event: MouseEvent) => void): void`
+Registers a callback for mouse movement events on this specific window.
+
+```typescript
+window.mouse.onMouseMove((event) => {
+    console.log(`Mouse moved to (${event.x}, ${event.y})`);
+});
+```
+
+#### `window.mouse.onScroll(callback: (event: MouseEvent) => void): void`
+Registers a callback for mouse scroll events on this specific window.
+
+```typescript
+window.mouse.onScroll((event) => {
+    const direction = event.button === 4 ? "up" : "down";
+    console.log(`Mouse scrolled ${direction} at (${event.x}, ${event.y})`);
+});
+```
+
+#### Global Mouse Events
+
+The `app.mouse` property provides access to global mouse events across all windows.
+
+#### `app.mouse.onMousePress(callback: (event: MouseEvent) => void): void`
+Registers a callback for mouse button press events across all windows.
+
+#### `app.mouse.onMouseRelease(callback: (event: MouseEvent) => void): void`
+Registers a callback for mouse button release events across all windows.
+
+#### `app.mouse.onMouseMove(callback: (event: MouseEvent) => void): void`
+Registers a callback for mouse movement events across all windows.
+
+#### `app.mouse.onScroll(callback: (event: MouseEvent) => void): void`
+Registers a callback for mouse scroll events across all windows.
+
+#### `MouseEvent` Interface
+
+```typescript
+interface MouseEvent {
+    eventType: MouseEventType; // Press, Release, Move, or Scroll
+    button: MouseButton;       // Left, Middle, Right, ScrollUp, ScrollDown
+    x: number;                 // X coordinate relative to window
+    y: number;                 // Y coordinate relative to window
+    windowHandle: number;      // Window that received the event
+}
+
+enum MouseButton {
+    Left = 1,
+    Middle = 2,
+    Right = 3,
+    ScrollUp = 4,
+    ScrollDown = 5
+}
+
+enum MouseEventType {
+    Press = 0,
+    Release = 1,
+    Move = 2,
+    Scroll = 3
+}
+```
 
 ### Color Format
 
@@ -506,6 +593,16 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.4.0
+- Added full mouse event support (Press, Release, Move, Scroll)
+- Added per-window mouse handling with `window.mouse` API
+- Added global mouse handling with `app.mouse` API
+- Mouse events include button identification (Left, Middle, Right, ScrollUp, ScrollDown)
+- Mouse events include position coordinates relative to window
+- Circular event queue prevents mouse event loss during rapid movement
+- Events only captured when window has focus
+- Support for all standard mouse buttons and scroll wheel
 
 ### v0.3.1
 - Added per-window keyboard event handling with `window.keyboard.onKeyPress()` and `window.keyboard.onKeyRelease()`
