@@ -1,9 +1,15 @@
 import { Window } from "./window";
+import { Keyboard } from "./keyboard";
 import * as native from "./native";
 
 export class App {
     public windows: Window[] = [];
+    public keyboard: Keyboard;
     private running: boolean = false;
+
+    constructor() {
+        this.keyboard = new Keyboard();
+    }
 
     start() {
         if (this.running) {
@@ -30,6 +36,9 @@ export class App {
 
         // Process events
         native.processEvents();
+        
+        // Process keyboard events
+        this.keyboard.processEvents();
         
         // Check if any windows were closed and check for new frames
         for (const win of this.windows) {
@@ -70,5 +79,21 @@ export class App {
         const win = new Window(title, width, height);
         this.windows.push(win);
         return win;
+    }
+
+    getFocusedWindow(): Window | null {
+        const focusedHandle = native.getFocusedWindow();
+        if (focusedHandle === BigInt(0)) {
+            return null;
+        }
+        
+        // Find the window with this handle
+        for (const win of this.windows) {
+            if (win.isOpen() && win.isFocused()) {
+                return win;
+            }
+        }
+        
+        return null;
     }
 }

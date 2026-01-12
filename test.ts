@@ -16,6 +16,7 @@ console.log("3. Creating windows...\n");
 const window1 = app.createWindow("Window 1 - Graphics Demo", 800, 600);
 const window2 = app.createWindow("Window 2 - Text Demo", 600, 400);
 const window3 = app.createWindow("Window 3 - Color Test", 500, 300);
+const window4 = app.createWindow("Window 4 - Keyboard Test", 600, 400);
 
 // Set up close callbacks
 window1.onClose(() => {
@@ -33,9 +34,15 @@ window3.onClose(() => {
     console.log(`  Remaining windows: ${app.windows.filter(w => w.isOpen()).length}`);
 });
 
+window4.onClose(() => {
+    console.log("→ Window 4 close callback triggered!");
+    console.log(`  Remaining windows: ${app.windows.filter(w => w.isOpen()).length}`);
+});
+
 window1.open();
 window2.open();
 window3.open();
+window4.open();
 
 const BLACK = 0x000000;
 const WHITE = 0xFFFFFF;
@@ -217,8 +224,63 @@ window3.onNewFrame((width, height) => {
     drawWindow3(width, height);
 });
 
+// ===== WINDOW 4: Keyboard Test =====
+let lastKeys: string[] = [];
+
+function drawWindow4(w: number, h: number) {
+    window4.setBackground(0xFAFAFA);
+    
+    const centerX = Math.floor(w / 2);
+    
+    // Title
+    window4.write(centerX - 80, 40, "Keyboard Event Test", BLACK);
+    
+    // Instructions
+    window4.write(20, 80, "Type on this window to see keyboard events", GRAY);
+    window4.write(20, 110, "Focus: " + (window4.isFocused() ? "YES" : "NO"), window4.isFocused() ? GREEN : RED);
+    
+    // Display last keys
+    window4.write(20, 150, "Recent Keys:", BLACK);
+    let yPos = 180;
+    for (let i = Math.max(0, lastKeys.length - 10); i < lastKeys.length; i++) {
+        if (yPos + 20 > h) break;
+        window4.write(40, yPos, lastKeys[i]!, BLUE);
+        yPos += 25;
+    }
+    
+    window4.flush();
+}
+
+console.log("\n7. Window 4 - Keyboard test...");
+drawWindow4(window4.getWidth(), window4.getHeight());
+
+window4.onNewFrame((width, height) => {
+    console.log(`→ Window 4 resized/redrawn: ${width}x${height}`);
+    drawWindow4(width, height);
+});
+
+// Set up keyboard event handlers
+app.keyboard.onKeyPress((event) => {
+    console.log(`→ Key Press: ${event.key} (keycode: ${event.keycode}, keysym: ${event.keysym})`);
+    lastKeys.push(`[DOWN] ${event.key}`);
+    if (lastKeys.length > 15) {
+        lastKeys.shift();
+    }
+    drawWindow4(window4.getWidth(), window4.getHeight());
+});
+
+app.keyboard.onKeyRelease((event) => {
+    console.log(`→ Key Release: ${event.key} (keycode: ${event.keycode}, keysym: ${event.keysym})`);
+    lastKeys.push(`[UP] ${event.key}`);
+    if (lastKeys.length > 15) {
+        lastKeys.shift();
+    }
+    drawWindow4(window4.getWidth(), window4.getHeight());
+});
+
 console.log("\n✓ Test completed successfully!");
-console.log("✓ 3 windows created with graphics and text");
+console.log("✓ 4 windows created with graphics, text, colors, and keyboard");
+console.log("✓ Try typing in Window 4 to see keyboard events");
 console.log("✓ Try closing individual windows - callbacks will trigger");
 console.log("✓ App will stop when all windows are closed");
 console.log("✓ Or press Ctrl+C to exit\n");

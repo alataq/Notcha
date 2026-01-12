@@ -138,4 +138,11 @@ export class Window {
         }
         native.flushWindow(this.windowHandle);
     }
+
+    isFocused(): boolean {
+        if (this.windowHandle === null) {
+            return false;
+        }
+        return native.isWindowFocused(this.windowHandle);
+    }
 }

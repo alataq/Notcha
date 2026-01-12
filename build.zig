@@ -4,6 +4,7 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    // Build the main library (window.zig will import keyboard functions)
     const lib = b.addSharedLibrary(.{
         .name = "notcha-window",
         .root_source_file = .{ .cwd_relative = "src/native/window.zig" },
@@ -19,7 +20,7 @@ pub fn build(b: *std.Build) void {
     // Print build info
     const build_info = b.addSystemCommand(&[_][]const u8{
         "echo",
-        "Building Notcha with X11 backend",
+        "Building Notcha with X11 backend and keyboard support",
     });
     b.getInstallStep().dependOn(&build_info.step);
 }

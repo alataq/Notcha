@@ -1,11 +1,12 @@
 const std = @import("std");
-const c = @cImport({
-    @cInclude("X11/Xlib.h");
-    @cInclude("X11/Xutil.h");
-});
+const clib = @import("c.zig");
+const c = clib.c;
 
-var display: ?*c.Display = null;
-var screen: c_int = 0;
+const keyboard = @import("keyboard.zig");
+
+// Export these for keyboard.zig
+pub var display: ?*c.Display = null;
+pub var screen: c_int = 0;
 var wm_delete_window: c.Atom = 0;
 var wm_protocols: c.Atom = 0;
 
@@ -63,7 +64,7 @@ pub export fn createWindow(title: [*:0]const u8, width: c_int, height: c_int) c.
     const win = c.XCreateSimpleWindow(d, root, 0, 0, @intCast(width), @intCast(height), 1, black, white);
 
     _ = c.XStoreName(d, win, title);
-    _ = c.XSelectInput(d, win, c.ExposureMask | c.KeyPressMask | c.ButtonPressMask | c.StructureNotifyMask);
+    _ = c.XSelectInput(d, win, c.ExposureMask | c.KeyPressMask | c.KeyReleaseMask | c.FocusChangeMask | c.ButtonPressMask | c.StructureNotifyMask);
 
     // Configure window attributes to reduce flickering
     var attrs: c.XSetWindowAttributes = undefined;
@@ -166,6 +167,26 @@ pub export fn processEvents() bool {
                     closed_windows.put(event.xclient.window, true) catch {};
                 }
             }
+        }
+
+        // Handle FocusIn events
+        if (event.type == c.FocusIn) {
+            keyboard.handleFocusIn(event.xfocus.window);
+        }
+
+        // Handle FocusOut events
+        if (event.type == c.FocusOut) {
+            keyboard.handleFocusOut(event.xfocus.window);
+        }
+
+        // Handle KeyPress events
+        if (event.type == c.KeyPress) {
+            keyboard.handleKeyEvent(event.xkey.keycode, event.xkey.state, true);
+        }
+
+        // Handle KeyRelease events
+        if (event.type == c.KeyRelease) {
+            keyboard.handleKeyEvent(event.xkey.keycode, event.xkey.state, false);
         }
 
         // Handle ConfigureNotify events (window resize)

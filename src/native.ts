@@ -74,6 +74,27 @@ function ensureLib() {
                 args: [FFIType.u64],
                 returns: FFIType.void,
             },
+            // Keyboard functions
+            getFocusedWindow: {
+                args: [],
+                returns: FFIType.u64,
+            },
+            isWindowFocused: {
+                args: [FFIType.u64],
+                returns: FFIType.bool,
+            },
+            hasKeyEvents: {
+                args: [],
+                returns: FFIType.bool,
+            },
+            getNextKeyEvent: {
+                args: [FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr],
+                returns: FFIType.bool,
+            },
+            clearKeyEvents: {
+                args: [],
+                returns: FFIType.void,
+            },
         });
     } catch (e) {
         console.error("Failed to load native library:", e);
@@ -149,3 +170,63 @@ export function flushWindow(win: bigint): void {
     const l = ensureLib();
     l.symbols.flushWindow(win);
 }
+
+export function getFocusedWindow(): bigint {
+    const l = ensureLib();
+    return l.symbols.getFocusedWindow();
+}
+
+export function isWindowFocused(win: bigint): boolean {
+    const l = ensureLib();
+    return l.symbols.isWindowFocused(win);
+}
+
+export function hasKeyEvents(): boolean {
+    const l = ensureLib();
+    return l.symbols.hasKeyEvents();
+}
+
+export function getNextKeyEvent(
+    keycode: Uint32Array,
+    keysym: Uint32Array,
+    state: Uint32Array,
+    pressed: Uint8Array,
+    keyName: Uint8Array,
+    keyNameLen: Uint32Array
+): boolean {
+    const l = ensureLib();
+    return l.symbols.getNextKeyEvent(
+        keycode,
+        keysym,
+        state,
+        pressed,
+        keyName,
+        keyNameLen
+    );
+}
+
+export function clearKeyEvents(): void {
+    const l = ensureLib();
+    l.symbols.clearKeyEvents();
+}
+
+export const native = {
+    initDisplay,
+    closeDisplay,
+    createWindow,
+    drawPixel,
+    processEvents,
+    destroyWindow,
+    setBackground,
+    drawText,
+    checkWindowClosed,
+    getWindowWidth,
+    getWindowHeight,
+    checkWindowNeedsRedraw,
+    flushWindow,
+    getFocusedWindow,
+    isWindowFocused,
+    hasKeyEvents,
+    getNextKeyEvent,
+    clearKeyEvents,
+};
