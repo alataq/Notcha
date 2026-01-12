@@ -33,7 +33,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/alataq/Notcha"
   },
   "devDependencies": {
     "@types/bun": "latest"
