@@ -65,6 +65,14 @@ pub export fn createWindow(title: [*:0]const u8, width: c_int, height: c_int) c.
     _ = c.XStoreName(d, win, title);
     _ = c.XSelectInput(d, win, c.ExposureMask | c.KeyPressMask | c.ButtonPressMask | c.StructureNotifyMask);
 
+    // Configure window attributes to reduce flickering
+    var attrs: c.XSetWindowAttributes = undefined;
+    attrs.backing_store = c.Always;
+    attrs.bit_gravity = c.NorthWestGravity;
+    attrs.win_gravity = c.NorthWestGravity;
+    attrs.background_pixel = white;
+    _ = c.XChangeWindowAttributes(d, win, c.CWBackingStore | c.CWBitGravity | c.CWWinGravity | c.CWBackPixel, &attrs);
+
     // Set up window close event
     var protocols: [1]c.Atom = .{wm_delete_window};
     _ = c.XSetWMProtocols(d, win, &protocols, 1);
@@ -75,6 +83,12 @@ pub export fn createWindow(title: [*:0]const u8, width: c_int, height: c_int) c.
     // Create a pixmap (framebuffer) for this window
     const depth = @as(c_uint, @intCast(c.XDefaultDepth(d, screen)));
     const pixmap = c.XCreatePixmap(d, win, @intCast(width), @intCast(height), depth);
+
+    // Initialize pixmap with white background
+    const gc = c.XDefaultGC(d, screen);
+    _ = c.XSetForeground(d, gc, white);
+    _ = c.XFillRectangle(d, pixmap, gc, 0, 0, @intCast(width), @intCast(height));
+
     pixmaps.put(win, pixmap) catch {};
 
     return win;
@@ -123,13 +137,16 @@ pub export fn flushWindow(win: c.Window) void {
     const pixmap = pixmaps.get(win) orelse return;
     const gc = c.XDefaultGC(d, screen);
 
+    // Disable GraphicsExposures to prevent flicker
+    _ = c.XSetGraphicsExposures(d, gc, 0);
+
     // Get current window dimensions
     var attrs: c.XWindowAttributes = undefined;
     _ = c.XGetWindowAttributes(d, win, &attrs);
 
     // Copy pixmap to window
     _ = c.XCopyArea(d, pixmap, win, gc, 0, 0, @intCast(attrs.width), @intCast(attrs.height), 0, 0);
-    _ = c.XFlush(d);
+    _ = c.XSync(d, 0);
 }
 
 pub export fn processEvents() bool {
@@ -151,25 +168,63 @@ pub export fn processEvents() bool {
             }
         }
 
-        // Handle Expose and ConfigureNotify events
-        if (event.type == c.Expose or event.type == c.ConfigureNotify) {
-            redraw_needed.put(event.xexpose.window, true) catch {};
+        // Handle ConfigureNotify events (window resize)
+        if (event.type == c.ConfigureNotify) {
+            const win = event.xconfigure.window;
+            const new_width = event.xconfigure.width;
+            const new_height = event.xconfigure.height;
 
-            // If ConfigureNotify (resize), recreate pixmap with new size
-            if (event.type == c.ConfigureNotify) {
-                const win = event.xconfigure.window;
-                const new_width = event.xconfigure.width;
-                const new_height = event.xconfigure.height;
+            // Check if there are more ConfigureNotify events pending for this window
+            // If so, skip this one and wait for the final size
+            var next_event: c.XEvent = undefined;
+            const has_more = c.XCheckTypedWindowEvent(d, win, c.ConfigureNotify, &next_event);
+            if (has_more != 0) {
+                // Put the next event back and skip this one
+                _ = c.XPutBackEvent(d, &next_event);
+                continue;
+            }
 
-                // Free old pixmap
-                if (pixmaps.get(win)) |old_pixmap| {
-                    _ = c.XFreePixmap(d, old_pixmap);
-                }
+            // This is the final resize event - handle it
+            const gc = c.XDefaultGC(d, screen);
 
-                // Create new pixmap with new size
-                const depth = @as(c_uint, @intCast(c.XDefaultDepth(d, screen)));
-                const new_pixmap = c.XCreatePixmap(d, win, @intCast(new_width), @intCast(new_height), depth);
-                pixmaps.put(win, new_pixmap) catch {};
+            // Disable GraphicsExposures
+            _ = c.XSetGraphicsExposures(d, gc, 0);
+
+            // Get old pixmap (if exists)
+            const old_pixmap = pixmaps.get(win);
+
+            // Create new pixmap with new size
+            const depth = @as(c_uint, @intCast(c.XDefaultDepth(d, screen)));
+            const new_pixmap = c.XCreatePixmap(d, win, @intCast(new_width), @intCast(new_height), depth);
+
+            // Fill with white first
+            const white = c.XWhitePixel(d, screen);
+            _ = c.XSetForeground(d, gc, white);
+            _ = c.XFillRectangle(d, new_pixmap, gc, 0, 0, @intCast(new_width), @intCast(new_height));
+
+            // Copy old content to new pixmap if we have one
+            if (old_pixmap) |old_pix| {
+                // Copy as much as possible from old to new
+                _ = c.XCopyArea(d, old_pix, new_pixmap, gc, 0, 0, @intCast(new_width), @intCast(new_height), 0, 0);
+                // Free old pixmap after copying
+                _ = c.XFreePixmap(d, old_pix);
+            }
+
+            pixmaps.put(win, new_pixmap) catch {};
+
+            // Immediately copy new pixmap to window and sync
+            _ = c.XCopyArea(d, new_pixmap, win, gc, 0, 0, @intCast(new_width), @intCast(new_height), 0, 0);
+            _ = c.XSync(d, 0);
+
+            // Mark for redraw
+            redraw_needed.put(win, true) catch {};
+        }
+
+        // Handle Expose events
+        if (event.type == c.Expose) {
+            // Only handle if this is the last expose event in the sequence
+            if (event.xexpose.count == 0) {
+                redraw_needed.put(event.xexpose.window, true) catch {};
             }
         }
     }
