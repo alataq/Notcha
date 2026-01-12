@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.2.0-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -12,6 +12,7 @@
 🎨 **Drawing Primitives** - Pixel drawing and text rendering with framebuffer  
 🪟 **Multiple Windows** - Create and manage multiple windows simultaneously  
 🎯 **Event Handling** - Window close callbacks and resize/redraw detection  
+⌨️ **Keyboard Input** - Full keyboard event support with focus tracking  
 📦 **Zero Dependencies** - Pre-built native binary included, ready to use  
 ⚡ **Double Buffering** - Smooth, flicker-free rendering with automatic framebuffer
 
@@ -177,6 +178,68 @@ window.onNewFrame((width, height) => {
 });
 ```
 
+#### `window.isFocused(): boolean`
+Returns `true` if this window currently has keyboard focus.
+
+```typescript
+if (window.isFocused()) {
+    console.log("Window has focus!");
+}
+```
+
+#### `app.getFocusedWindow(): Window | null`
+Returns the currently focused window, or `null` if no window has focus.
+
+```typescript
+const focused = app.getFocusedWindow();
+if (focused) {
+    console.log("Focused window:", focused.title);
+}
+```
+
+### Keyboard
+
+The `app.keyboard` property provides access to keyboard events. Keyboard events are only captured when a window has focus.
+
+#### `app.keyboard.onKeyPress(callback: (event: KeyEvent) => void): void`
+Registers a callback for key press events.
+
+```typescript
+app.keyboard.onKeyPress((event) => {
+    console.log(`Key pressed: ${event.key}`);
+});
+```
+
+#### `app.keyboard.onKeyRelease(callback: (event: KeyEvent) => void): void`
+Registers a callback for key release events.
+
+```typescript
+app.keyboard.onKeyRelease((event) => {
+    console.log(`Key released: ${event.key}`);
+});
+```
+
+#### `KeyEvent` Interface
+
+```typescript
+interface KeyEvent {
+    keycode: number;  // X11 keycode
+    keysym: number;   // X11 keysym
+    state: number;    // Modifier state
+    pressed: boolean; // true for press, false for release
+    key: string;      // Human-readable key name
+}
+```
+
+**Key names include:**
+- Letters: `"a"`, `"b"`, `"c"`, etc.
+- Numbers: `"1"`, `"2"`, `"3"`, etc.
+- Special keys: `"Enter"`, `"Escape"`, `"Tab"`, `"Space"`, `"Backspace"`
+- Arrows: `"Up"`, `"Down"`, `"Left"`, `"Right"`
+- Function keys: `"F1"` through `"F12"`
+- Modifiers: `"Shift"`, `"Control"`, `"Alt"`, `"Meta"`
+- Other: `"Delete"`, `"Home"`, `"End"`, `"PageUp"`, `"PageDown"`, `"Insert"`, `"CapsLock"`
+
 ### Color Format
 
 Colors are specified as hexadecimal RGB values:
@@ -190,6 +253,42 @@ const BLACK = 0x000000;
 ```
 
 ## Examples
+
+### Keyboard Input
+
+```typescript
+import { App } from "notcha";
+
+const app = new App();
+app.start();
+
+const window = app.createWindow("Keyboard Test", 600, 400);
+window.open();
+
+let keys: string[] = [];
+
+// Listen to keyboard events
+app.keyboard.onKeyPress((event) => {
+    keys.push(`[DOWN] ${event.key}`);
+    if (keys.length > 10) keys.shift();
+    
+    // Redraw with new key list
+    window.setBackground(0xFFFFFF);
+    window.write(20, 40, "Recent Keys:", 0x000000);
+    
+    let y = 70;
+    for (const key of keys) {
+        window.write(40, y, key, 0x0000FF);
+        y += 25;
+    }
+    
+    window.flush();
+});
+
+app.keyboard.onKeyRelease((event) => {
+    console.log(`Key released: ${event.key}`);
+});
+```
 
 ### Multiple Windows
 
@@ -383,6 +482,15 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.3.0
+- Added full keyboard event support (KeyPress, KeyRelease)
+- Added focus tracking with `window.isFocused()` and `app.getFocusedWindow()`
+- Added `app.keyboard.onKeyPress()` and `app.keyboard.onKeyRelease()` API
+- Keyboard events include human-readable key names
+- Support for all common keys (letters, numbers, arrows, function keys, modifiers)
+- Circular event queue prevents event loss during rapid typing
+- Events only captured when window has focus
 
 ### v0.2.0
 - Added framebuffer (double buffering) for flicker-free rendering
