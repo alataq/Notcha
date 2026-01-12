@@ -1,5 +1,6 @@
 import * as native from "./native";
 import type { KeyEvent } from "./keyboard";
+import type { MouseEvent } from "./mouse";
 
 export class Window {
     public title: string = "Notcha";
@@ -13,12 +14,33 @@ export class Window {
     private keyPressCallbacks: Array<(event: KeyEvent) => void> = [];
     private keyReleaseCallbacks: Array<(event: KeyEvent) => void> = [];
 
+    // Per-window mouse callbacks
+    private mousePressCallbacks: Array<(event: MouseEvent) => void> = [];
+    private mouseReleaseCallbacks: Array<(event: MouseEvent) => void> = [];
+    private mouseMoveCallbacks: Array<(event: MouseEvent) => void> = [];
+    private mouseScrollCallbacks: Array<(event: MouseEvent) => void> = [];
+
     public keyboard = {
         onKeyPress: (callback: (event: KeyEvent) => void) => {
             this.keyPressCallbacks.push(callback);
         },
         onKeyRelease: (callback: (event: KeyEvent) => void) => {
             this.keyReleaseCallbacks.push(callback);
+        }
+    };
+
+    public mouse = {
+        onMousePress: (callback: (event: MouseEvent) => void) => {
+            this.mousePressCallbacks.push(callback);
+        },
+        onMouseRelease: (callback: (event: MouseEvent) => void) => {
+            this.mouseReleaseCallbacks.push(callback);
+        },
+        onMouseMove: (callback: (event: MouseEvent) => void) => {
+            this.mouseMoveCallbacks.push(callback);
+        },
+        onScroll: (callback: (event: MouseEvent) => void) => {
+            this.mouseScrollCallbacks.push(callback);
         }
     };
 
@@ -176,6 +198,46 @@ export class Window {
      */
     _triggerKeyRelease(event: KeyEvent): void {
         for (const callback of this.keyReleaseCallbacks) {
+            callback(event);
+        }
+    }
+
+    /**
+     * @internal
+     * Trigger per-window mouse callbacks (called by App)
+     */
+    _triggerMousePress(event: MouseEvent): void {
+        for (const callback of this.mousePressCallbacks) {
+            callback(event);
+        }
+    }
+
+    /**
+     * @internal
+     * Trigger per-window mouse callbacks (called by App)
+     */
+    _triggerMouseRelease(event: MouseEvent): void {
+        for (const callback of this.mouseReleaseCallbacks) {
+            callback(event);
+        }
+    }
+
+    /**
+     * @internal
+     * Trigger per-window mouse callbacks (called by App)
+     */
+    _triggerMouseMove(event: MouseEvent): void {
+        for (const callback of this.mouseMoveCallbacks) {
+            callback(event);
+        }
+    }
+
+    /**
+     * @internal
+     * Trigger per-window mouse callbacks (called by App)
+     */
+    _triggerMouseScroll(event: MouseEvent): void {
+        for (const callback of this.mouseScrollCallbacks) {
             callback(event);
         }
     }

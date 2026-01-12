@@ -17,6 +17,7 @@ const window1 = app.createWindow("Window 1 - Graphics Demo", 800, 600);
 const window2 = app.createWindow("Window 2 - Text Demo", 600, 400);
 const window3 = app.createWindow("Window 3 - Color Test", 500, 300);
 const window4 = app.createWindow("Window 4 - Keyboard Test", 600, 400);
+const window5 = app.createWindow("Window 5 - Mouse Test", 600, 500);
 
 // Set up close callbacks
 window1.onClose(() => {
@@ -39,10 +40,16 @@ window4.onClose(() => {
     console.log(`  Remaining windows: ${app.windows.filter(w => w.isOpen()).length}`);
 });
 
+window5.onClose(() => {
+    console.log("→ Window 5 close callback triggered!");
+    console.log(`  Remaining windows: ${app.windows.filter(w => w.isOpen()).length}`);
+});
+
 window1.open();
 window2.open();
 window3.open();
 window4.open();
+window5.open();
 
 const BLACK = 0x000000;
 const WHITE = 0xFFFFFF;
@@ -279,9 +286,92 @@ window4.keyboard.onKeyRelease((event) => {
     drawWindow4(window4.getWidth(), window4.getHeight());
 });
 
+// ===== WINDOW 5: Mouse Test =====
+let mouseEvents: string[] = [];
+let lastMousePos = { x: 0, y: 0 };
+
+function drawWindow5(w: number, h: number) {
+    window5.setBackground(0xFAFAFA);
+    
+    const centerX = Math.floor(w / 2);
+    
+    // Title
+    window5.write(centerX - 80, 40, "Mouse Event Test", BLACK);
+    
+    // Instructions
+    window5.write(20, 80, "Use your mouse in this window", GRAY);
+    window5.write(20, 110, "Focus: " + (window5.isFocused() ? "YES" : "NO"), window5.isFocused() ? GREEN : RED);
+    window5.write(20, 130, "(Per-window mouse handling)", BLUE);
+    
+    // Display mouse position
+    window5.write(20, 160, `Mouse Position: (${lastMousePos.x}, ${lastMousePos.y})`, MAGENTA);
+    
+    // Display last events
+    window5.write(20, 190, "Recent Events:", BLACK);
+    let yPos = 220;
+    for (let i = Math.max(0, mouseEvents.length - 8); i < mouseEvents.length; i++) {
+        if (yPos + 20 > h) break;
+        window5.write(40, yPos, mouseEvents[i]!, BLUE);
+        yPos += 25;
+    }
+    
+    window5.flush();
+}
+
+console.log("\n8. Window 5 - Mouse test...");
+drawWindow5(window5.getWidth(), window5.getHeight());
+
+window5.onNewFrame((width, height) => {
+    console.log(`→ Window 5 resized/redrawn: ${width}x${height}`);
+    drawWindow5(width, height);
+});
+
+// Set up per-window mouse event handlers
+window5.mouse.onMousePress((event) => {
+    const buttonName = event.button === 1 ? "Left" : event.button === 2 ? "Middle" : event.button === 3 ? "Right" : `Button ${event.button}`;
+    console.log(`→ [Window 5] Mouse Press: ${buttonName} at (${event.x}, ${event.y})`);
+    mouseEvents.push(`[PRESS] ${buttonName} (${event.x}, ${event.y})`);
+    if (mouseEvents.length > 12) {
+        mouseEvents.shift();
+    }
+    lastMousePos = { x: event.x, y: event.y };
+    drawWindow5(window5.getWidth(), window5.getHeight());
+});
+
+window5.mouse.onMouseRelease((event) => {
+    const buttonName = event.button === 1 ? "Left" : event.button === 2 ? "Middle" : event.button === 3 ? "Right" : `Button ${event.button}`;
+    console.log(`→ [Window 5] Mouse Release: ${buttonName} at (${event.x}, ${event.y})`);
+    mouseEvents.push(`[RELEASE] ${buttonName} (${event.x}, ${event.y})`);
+    if (mouseEvents.length > 12) {
+        mouseEvents.shift();
+    }
+    lastMousePos = { x: event.x, y: event.y };
+    drawWindow5(window5.getWidth(), window5.getHeight());
+});
+
+window5.mouse.onMouseMove((event) => {
+    lastMousePos = { x: event.x, y: event.y };
+    // Redraw less frequently for move events to avoid excessive redraws
+    if (Math.random() < 0.1) { // Only redraw ~10% of moves
+        drawWindow5(window5.getWidth(), window5.getHeight());
+    }
+});
+
+window5.mouse.onScroll((event) => {
+    const direction = event.button === 4 ? "Up" : event.button === 5 ? "Down" : `Button ${event.button}`;
+    console.log(`→ [Window 5] Mouse Scroll: ${direction} at (${event.x}, ${event.y})`);
+    mouseEvents.push(`[SCROLL] ${direction} (${event.x}, ${event.y})`);
+    if (mouseEvents.length > 12) {
+        mouseEvents.shift();
+    }
+    lastMousePos = { x: event.x, y: event.y };
+    drawWindow5(window5.getWidth(), window5.getHeight());
+});
+
 console.log("\n✓ Test completed successfully!");
-console.log("✓ 4 windows created with graphics, text, colors, and keyboard");
+console.log("✓ 5 windows created with graphics, text, colors, keyboard, and mouse");
 console.log("✓ Try typing in Window 4 to see keyboard events");
+console.log("✓ Try clicking, moving, and scrolling in Window 5 to see mouse events");
 console.log("✓ Try closing individual windows - callbacks will trigger");
 console.log("✓ App will stop when all windows are closed");
 console.log("✓ Or press Ctrl+C to exit\n");

@@ -95,6 +95,23 @@ function ensureLib() {
                 args: [],
                 returns: FFIType.void,
             },
+            // Mouse functions
+            hasMouseEvents: {
+                args: [],
+                returns: FFIType.bool,
+            },
+            getNextMouseEvent: {
+                args: [FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr, FFIType.ptr],
+                returns: FFIType.bool,
+            },
+            clearMouseEvents: {
+                args: [],
+                returns: FFIType.void,
+            },
+            getMousePosition: {
+                args: [FFIType.ptr, FFIType.ptr],
+                returns: FFIType.void,
+            },
         });
     } catch (e) {
         console.error("Failed to load native library:", e);
@@ -210,6 +227,38 @@ export function clearKeyEvents(): void {
     l.symbols.clearKeyEvents();
 }
 
+export function hasMouseEvents(): boolean {
+    const l = ensureLib();
+    return l.symbols.hasMouseEvents();
+}
+
+export function getNextMouseEvent(
+    eventType: BigUint64Array,
+    button: Uint32Array,
+    x: Int32Array,
+    y: Int32Array,
+    windowHandle: BigUint64Array
+): boolean {
+    const l = ensureLib();
+    return l.symbols.getNextMouseEvent(
+        eventType,
+        button,
+        x,
+        y,
+        windowHandle
+    );
+}
+
+export function clearMouseEvents(): void {
+    const l = ensureLib();
+    l.symbols.clearMouseEvents();
+}
+
+export function getMousePosition(x: Int32Array, y: Int32Array): void {
+    const l = ensureLib();
+    l.symbols.getMousePosition(x, y);
+}
+
 export const native = {
     initDisplay,
     closeDisplay,
@@ -229,4 +278,8 @@ export const native = {
     hasKeyEvents,
     getNextKeyEvent,
     clearKeyEvents,
+    hasMouseEvents,
+    getNextMouseEvent,
+    clearMouseEvents,
+    getMousePosition,
 };

@@ -1,14 +1,17 @@
 import { Window } from "./window";
 import { Keyboard, type KeyEvent } from "./keyboard";
+import { Mouse, type MouseEvent } from "./mouse";
 import * as native from "./native";
 
 export class App {
     public windows: Window[] = [];
     public keyboard: Keyboard;
+    public mouse: Mouse;
     private running: boolean = false;
 
     constructor() {
         this.keyboard = new Keyboard();
+        this.mouse = new Mouse();
     }
 
     start() {
@@ -39,6 +42,9 @@ export class App {
         
         // Process keyboard events with per-window dispatching
         this.processKeyboardEvents();
+        
+        // Process mouse events with per-window dispatching
+        this.processMouseEvents();
         
         // Check if any windows were closed and check for new frames
         for (const win of this.windows) {
@@ -112,6 +118,19 @@ export class App {
                 this.keyboard.keyReleaseCallbacks.forEach(cb => cb(event));
             }
         }
+    }
+
+    private processMouseEvents() {
+        // Get focused window
+        const focusedWindow = this.getFocusedWindow();
+        
+        // Process mouse events - the Mouse class will handle dispatching
+        this.mouse.processEvents(
+            focusedWindow ? (event) => focusedWindow._triggerMousePress(event) : undefined,
+            focusedWindow ? (event) => focusedWindow._triggerMouseRelease(event) : undefined,
+            focusedWindow ? (event) => focusedWindow._triggerMouseMove(event) : undefined,
+            focusedWindow ? (event) => focusedWindow._triggerMouseScroll(event) : undefined
+        );
     }
 
     stop() {

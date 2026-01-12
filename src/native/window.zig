@@ -3,6 +3,7 @@ const clib = @import("c.zig");
 const c = clib.c;
 
 const keyboard = @import("keyboard.zig");
+const mouse = @import("mouse.zig");
 
 // Export these for keyboard.zig
 pub var display: ?*c.Display = null;
@@ -64,7 +65,7 @@ pub export fn createWindow(title: [*:0]const u8, width: c_int, height: c_int) c.
     const win = c.XCreateSimpleWindow(d, root, 0, 0, @intCast(width), @intCast(height), 1, black, white);
 
     _ = c.XStoreName(d, win, title);
-    _ = c.XSelectInput(d, win, c.ExposureMask | c.KeyPressMask | c.KeyReleaseMask | c.FocusChangeMask | c.ButtonPressMask | c.StructureNotifyMask);
+    _ = c.XSelectInput(d, win, c.ExposureMask | c.KeyPressMask | c.KeyReleaseMask | c.FocusChangeMask | c.ButtonPressMask | c.ButtonReleaseMask | c.PointerMotionMask | c.StructureNotifyMask);
 
     // Configure window attributes to reduce flickering
     var attrs: c.XSetWindowAttributes = undefined;
@@ -187,6 +188,43 @@ pub export fn processEvents() bool {
         // Handle KeyRelease events
         if (event.type == c.KeyRelease) {
             keyboard.handleKeyEvent(event.xkey.keycode, event.xkey.state, false);
+        }
+
+        // Handle ButtonPress events (mouse button press)
+        if (event.type == c.ButtonPress) {
+            const button = event.xbutton.button;
+            const x = event.xbutton.x;
+            const y = event.xbutton.y;
+            const win = event.xbutton.window;
+
+            // Check if this is a scroll event (buttons 4 and 5)
+            if (button == 4 or button == 5) {
+                mouse.handleMouseScroll(win, button, x, y);
+            } else {
+                mouse.handleMousePress(win, button, x, y);
+            }
+        }
+
+        // Handle ButtonRelease events (mouse button release)
+        if (event.type == c.ButtonRelease) {
+            const button = event.xbutton.button;
+            const x = event.xbutton.x;
+            const y = event.xbutton.y;
+            const win = event.xbutton.window;
+
+            // Ignore scroll button releases
+            if (button != 4 and button != 5) {
+                mouse.handleMouseRelease(win, button, x, y);
+            }
+        }
+
+        // Handle MotionNotify events (mouse movement)
+        if (event.type == c.MotionNotify) {
+            const x = event.xmotion.x;
+            const y = event.xmotion.y;
+            const win = event.xmotion.window;
+
+            mouse.handleMouseMove(win, x, y);
         }
 
         // Handle ConfigureNotify events (window resize)
