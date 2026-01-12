@@ -373,4 +373,5 @@ comptime {
     _ = sound.playClick;
     _ = sound.playSuccess;
     _ = sound.playError;
+    _ = sound.playAudioFile;
 }

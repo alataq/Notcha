@@ -141,6 +141,10 @@ function ensureLib() {
                 args: [],
                 returns: FFIType.bool,
             },
+            playAudioFile: {
+                args: [FFIType.cstring],
+                returns: FFIType.bool,
+            },
         });
     } catch (e) {
         console.error("Failed to load native library:", e);
@@ -323,6 +327,13 @@ export function playError(): boolean {
     return l.symbols.playError();
 }
 
+export function playAudioFile(filePath: string): boolean {
+    const l = ensureLib();
+    // Convert string to null-terminated C string buffer
+    const buffer = Buffer.from(filePath + '\0', 'utf-8');
+    return l.symbols.playAudioFile(buffer);
+}
+
 export const native = {
     initDisplay,
     closeDisplay,
@@ -353,4 +364,5 @@ export const native = {
     playClick,
     playSuccess,
     playError,
+    playAudioFile,
 };

@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.5.1-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -36,7 +36,7 @@ bun add notcha
 ```
 
 **Requirements:**
-- Linux: X11 and ALSA development libraries (`sudo apt install libx11-dev libasound2-dev`)
+- Linux: X11, ALSA, and libsndfile development libraries (`sudo apt install libx11-dev libasound2-dev libsndfile1-dev`)
 - Other platforms: X11 server (XWayland, WSLg, XQuartz, etc.)
 
 ## Quick Start
@@ -445,6 +445,26 @@ if (app.sound.isInitialized()) {
 }
 ```
 
+#### `app.sound.playFile(pathOrUrl: string): Promise<boolean>`
+Plays an audio file from the filesystem or downloads and plays from a URL.
+Supports WAV, OGG, FLAC, MP3, and other formats via libsndfile.
+
+```typescript
+// Play local file
+await app.sound.playFile("/path/to/audio.wav");
+
+// Play from URL (automatically downloads)
+await app.sound.playFile("https://example.com/sound.wav");
+
+// Handle success/failure
+const success = await app.sound.playFile("https://example.com/audio.ogg");
+if (success) {
+    console.log("Audio played successfully");
+} else {
+    console.error("Failed to play audio");
+}
+```
+
 ### Sound Example
 
 ```typescript
@@ -475,11 +495,12 @@ window.mouse.onMousePress((event) => {
 - **Channels**: 2 (stereo)
 - **Buffer Size**: 1024 frames
 - **Synthesis**: Real-time sine wave generation
+- **File Formats**: WAV, OGG, FLAC, MP3, and more via libsndfile
 
 ### Platform Requirements
 
 - Linux with ALSA support (most Linux distributions)
-- `libasound2-dev` package for building from source
+- `libasound2-dev` and `libsndfile1-dev` packages for building from source
 - Audio hardware/driver configured
 
 ## Examples
@@ -712,6 +733,15 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.5.1
+- Added audio file playback support with `app.sound.playFile(pathOrUrl)`
+- Supports local files and HTTP/HTTPS URLs (auto-downloads)
+- Supports WAV, OGG, FLAC, MP3, and more via libsndfile
+- Automatic format detection and decoding
+- Automatic mono-to-stereo conversion
+- Updated sound demo with internet audio examples
+- Requires `libsndfile1-dev` for building from source
 
 ### v0.5.0
 - Added audio playback support via ALSA (Advanced Linux Sound Architecture)

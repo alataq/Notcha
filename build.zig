@@ -15,6 +15,7 @@ pub fn build(b: *std.Build) void {
     lib.linkLibC();
     lib.linkSystemLibrary("X11");
     lib.linkSystemLibrary("asound");
+    lib.linkSystemLibrary("sndfile");
 
     b.installArtifact(lib);
 

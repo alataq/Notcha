@@ -135,3 +135,73 @@ pub export fn playSuccess() bool {
 pub export fn playError() bool {
     return playTone(200, 300, 0.4);
 }
+
+/// Play an audio file from the filesystem
+/// The file path should be a null-terminated C string
+/// Supports WAV, OGG, FLAC, and other formats via libsndfile
+pub export fn playAudioFile(file_path: [*:0]const u8) bool {
+    if (!audio_initialized or pcm_handle == null) return false;
+
+    const pcm = pcm_handle orelse return false;
+
+    // Open the audio file
+    var sf_info: c.SF_INFO = undefined;
+    sf_info.format = 0;
+
+    const file = c.sf_open(file_path, c.SFM_READ, &sf_info);
+    if (file == null) {
+        std.debug.print("Failed to open audio file: {s}\n", .{file_path});
+        return false;
+    }
+    defer _ = c.sf_close(file);
+
+    // Read and play the audio in chunks
+    const chunk_size = BUFFER_FRAMES * @as(usize, @intCast(sf_info.channels));
+    const buffer = std.heap.page_allocator.alloc(i16, chunk_size) catch return false;
+    defer std.heap.page_allocator.free(buffer);
+
+    // If the file is not stereo or sample rate doesn't match, we'll need to handle it
+    // For simplicity, we'll play mono as stereo by duplicating channels
+    // and accept any sample rate (ALSA will handle resampling if configured)
+
+    var frames_read: c.sf_count_t = 0;
+    while (true) {
+        frames_read = c.sf_readf_short(file, buffer.ptr, BUFFER_FRAMES);
+        if (frames_read <= 0) break;
+
+        const frames_to_write = @as(c.snd_pcm_uframes_t, @intCast(frames_read));
+
+        // If mono, convert to stereo
+        if (sf_info.channels == 1) {
+            var stereo_buffer = std.heap.page_allocator.alloc(i16, @as(usize, @intCast(frames_read)) * 2) catch return false;
+            defer std.heap.page_allocator.free(stereo_buffer);
+
+            var i: usize = 0;
+            while (i < frames_read) : (i += 1) {
+                stereo_buffer[i * 2] = buffer[i];
+                stereo_buffer[i * 2 + 1] = buffer[i];
+            }
+
+            const result = c.snd_pcm_writei(pcm, stereo_buffer.ptr, frames_to_write);
+            if (result < 0) {
+                _ = c.snd_pcm_recover(pcm, @intCast(result), 0);
+                return false;
+            }
+        } else {
+            // Already stereo or multi-channel, play as-is
+            const result = c.snd_pcm_writei(pcm, buffer.ptr, frames_to_write);
+            if (result < 0) {
+                _ = c.snd_pcm_recover(pcm, @intCast(result), 0);
+                return false;
+            }
+        }
+    }
+
+    // Wait for playback to complete
+    _ = c.snd_pcm_drain(pcm);
+
+    // Re-prepare for next playback
+    _ = c.snd_pcm_prepare(pcm);
+
+    return true;
+}

@@ -5,4 +5,5 @@ pub const c = @cImport({
     @cInclude("X11/keysym.h");
     @cInclude("X11/XKBlib.h");
     @cInclude("alsa/asoundlib.h");
+    @cInclude("sndfile.h");
 });

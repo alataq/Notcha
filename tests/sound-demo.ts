@@ -14,13 +14,13 @@ interface SoundButton {
     width: number;
     height: number;
     label: string;
-    action: () => boolean;
+    action: () => boolean | Promise<boolean>;
 }
 
 let buttons: SoundButton[] = [];
 
 export function createSoundDemo(app: App): Window {
-    const window = app.createWindow("Sound Test", 600, 500);
+    const window = app.createWindow("Sound Test", 700, 700);
     
     function draw(w: number, h: number) {
         window.setBackground(0xFAFAFA);
@@ -35,15 +35,16 @@ export function createSoundDemo(app: App): Window {
         const statusColor = app.sound.isInitialized() ? GREEN : GRAY;
         window.write(20, 80, `Audio Status: ${audioStatus}`, statusColor, 2);
         
-        // Instructions
-        window.write(20, 110, "Click buttons to play sounds", GRAY, 2);
+        // Section headers
+        window.write(20, 105, "Tone Generation:", BLACK, 2);
+        window.write(20, 420, "Audio File Playback (from Internet):", BLACK, 2);
         
         // Button dimensions
-        const buttonWidth = Math.min(250, w - 100);
-        const buttonHeight = 50;
+        const buttonWidth = Math.min(280, w - 100);
+        const buttonHeight = 45;
         const buttonX = Math.floor((w - buttonWidth) / 2);
-        const spacing = 65;
-        const startY = 150;
+        const spacing = 55;
+        const startY = 120;
         
         // Create sound buttons
         buttons = [
@@ -52,6 +53,9 @@ export function createSoundDemo(app: App): Window {
             { x: buttonX, y: startY + spacing * 2, width: buttonWidth, height: buttonHeight, label: "Play Success (600 Hz)", action: () => app.sound.success() },
             { x: buttonX, y: startY + spacing * 3, width: buttonWidth, height: buttonHeight, label: "Play Error (200 Hz)", action: () => app.sound.error() },
             { x: buttonX, y: startY + spacing * 4, width: buttonWidth, height: buttonHeight, label: "Custom Tone (880 Hz)", action: () => app.sound.playTone(880, 300, 0.4) },
+            { x: buttonX, y: startY + spacing * 5 + 20, width: buttonWidth, height: buttonHeight, label: "Ding Sound", action: async () => { return await app.sound.playFile("https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg"); } },
+            { x: buttonX, y: startY + spacing * 6 + 20, width: buttonWidth, height: buttonHeight, label: "Beep Alarm", action: async () => { return await app.sound.playFile("https://actions.google.com/sounds/v1/alarms/beep_short.ogg"); } },
+            { x: buttonX, y: startY + spacing * 7 + 20, width: buttonWidth, height: buttonHeight, label: "Cartoon Clang", action: async () => { return await app.sound.playFile("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg"); } },
         ];
         
         // Draw buttons
@@ -80,9 +84,10 @@ export function createSoundDemo(app: App): Window {
         }
         
         // Info text at bottom
-        window.write(20, h - 60, "Frequencies:", BLACK, 2);
-        window.write(20, h - 35, "Beep: 440Hz | Click: 1000Hz | Success: 600Hz", GRAY, 1);
-        window.write(20, h - 20, "Error: 200Hz | Custom: 880Hz", GRAY, 1);
+        window.write(20, h - 80, "Tone Frequencies:", BLACK, 2);
+        window.write(20, h - 60, "Beep: 440Hz | Click: 1000Hz | Success: 600Hz", GRAY, 1);
+        window.write(20, h - 45, "Error: 200Hz | Custom: 880Hz", GRAY, 1);
+        window.write(20, h - 20, "Audio files are downloaded from internet in real-time", MAGENTA, 1);
         
         window.flush();
     }
@@ -93,7 +98,7 @@ export function createSoundDemo(app: App): Window {
     });
     
     // Handle mouse clicks on buttons
-    window.mouse.onMousePress((event: any) => {
+    window.mouse.onMousePress(async (event: any) => {
         for (const button of buttons) {
             if (
                 event.x >= button.x &&
@@ -102,7 +107,8 @@ export function createSoundDemo(app: App): Window {
                 event.y <= button.y + button.height
             ) {
                 console.log(`→ Sound button clicked: ${button.label}`);
-                const success = button.action();
+                const result = button.action();
+                const success = result instanceof Promise ? await result : result;
                 if (success) {
                     console.log(`→ Sound played successfully`);
                 } else {
