@@ -1,5 +1,5 @@
 import { Window } from "./window";
-import { Keyboard } from "./keyboard";
+import { Keyboard, type KeyEvent } from "./keyboard";
 import * as native from "./native";
 
 export class App {
@@ -37,8 +37,8 @@ export class App {
         // Process events
         native.processEvents();
         
-        // Process keyboard events
-        this.keyboard.processEvents();
+        // Process keyboard events with per-window dispatching
+        this.processKeyboardEvents();
         
         // Check if any windows were closed and check for new frames
         for (const win of this.windows) {
@@ -58,6 +58,60 @@ export class App {
 
         // Continue event loop
         setTimeout(() => this.eventLoop(), 16); // ~60 FPS
+    }
+
+    private processKeyboardEvents() {
+        // Get focused window
+        const focusedWindow = this.getFocusedWindow();
+        
+        // Process keyboard events
+        while (native.hasKeyEvents()) {
+            const keycode = new Uint32Array(1);
+            const keysym = new Uint32Array(1);
+            const state = new Uint32Array(1);
+            const pressed = new Uint8Array(1);
+            const keyNameBuffer = new Uint8Array(32);
+            const keyNameLen = new Uint32Array(1);
+
+            const hasEvent = native.getNextKeyEvent(
+                keycode,
+                keysym,
+                state,
+                pressed,
+                keyNameBuffer,
+                keyNameLen
+            );
+
+            if (!hasEvent) break;
+
+            // Convert key name buffer to string
+            const decoder = new TextDecoder();
+            const keyName = decoder.decode(keyNameBuffer.slice(0, keyNameLen[0]));
+
+            const event: KeyEvent = {
+                keycode: keycode[0]!,
+                keysym: keysym[0]!,
+                state: state[0]!,
+                pressed: pressed[0]! !== 0,
+                key: keyName,
+            };
+
+            // Dispatch to focused window first (if it has handlers)
+            if (focusedWindow) {
+                if (event.pressed) {
+                    focusedWindow._triggerKeyPress(event);
+                } else {
+                    focusedWindow._triggerKeyRelease(event);
+                }
+            }
+            
+            // Then dispatch to global app.keyboard handlers (for backward compatibility)
+            if (event.pressed) {
+                this.keyboard.keyPressCallbacks.forEach(cb => cb(event));
+            } else {
+                this.keyboard.keyReleaseCallbacks.forEach(cb => cb(event));
+            }
+        }
     }
 
     stop() {

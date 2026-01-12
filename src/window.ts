@@ -1,4 +1,5 @@
 import * as native from "./native";
+import type { KeyEvent } from "./keyboard";
 
 export class Window {
     public title: string = "Notcha";
@@ -7,6 +8,19 @@ export class Window {
     private height: number = 600;
     private closeCallback: (() => void) | null = null;
     private newFrameCallback: ((width: number, height: number) => void) | null = null;
+    
+    // Per-window keyboard callbacks
+    private keyPressCallbacks: Array<(event: KeyEvent) => void> = [];
+    private keyReleaseCallbacks: Array<(event: KeyEvent) => void> = [];
+
+    public keyboard = {
+        onKeyPress: (callback: (event: KeyEvent) => void) => {
+            this.keyPressCallbacks.push(callback);
+        },
+        onKeyRelease: (callback: (event: KeyEvent) => void) => {
+            this.keyReleaseCallbacks.push(callback);
+        }
+    };
 
     constructor(title?: string, width: number = 800, height: number = 600) {
         if (title) {
@@ -144,5 +158,25 @@ export class Window {
             return false;
         }
         return native.isWindowFocused(this.windowHandle);
+    }
+
+    /**
+     * @internal
+     * Trigger per-window keyboard callbacks (called by App)
+     */
+    _triggerKeyPress(event: KeyEvent): void {
+        for (const callback of this.keyPressCallbacks) {
+            callback(event);
+        }
+    }
+
+    /**
+     * @internal
+     * Trigger per-window keyboard callbacks (called by App)
+     */
+    _triggerKeyRelease(event: KeyEvent): void {
+        for (const callback of this.keyReleaseCallbacks) {
+            callback(event);
+        }
     }
 }

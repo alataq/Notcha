@@ -12,8 +12,8 @@ type KeyPressCallback = (event: KeyEvent) => void;
 type KeyReleaseCallback = (event: KeyEvent) => void;
 
 export class Keyboard {
-  private keyPressCallbacks: KeyPressCallback[] = [];
-  private keyReleaseCallbacks: KeyReleaseCallback[] = [];
+  public keyPressCallbacks: KeyPressCallback[] = [];
+  public keyReleaseCallbacks: KeyReleaseCallback[] = [];
 
   /**
    * Register a callback for key press events

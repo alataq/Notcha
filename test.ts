@@ -238,10 +238,11 @@ function drawWindow4(w: number, h: number) {
     // Instructions
     window4.write(20, 80, "Type on this window to see keyboard events", GRAY);
     window4.write(20, 110, "Focus: " + (window4.isFocused() ? "YES" : "NO"), window4.isFocused() ? GREEN : RED);
+    window4.write(20, 130, "(Per-window keyboard handling)", BLUE);
     
     // Display last keys
-    window4.write(20, 150, "Recent Keys:", BLACK);
-    let yPos = 180;
+    window4.write(20, 160, "Recent Keys:", BLACK);
+    let yPos = 190;
     for (let i = Math.max(0, lastKeys.length - 10); i < lastKeys.length; i++) {
         if (yPos + 20 > h) break;
         window4.write(40, yPos, lastKeys[i]!, BLUE);
@@ -259,9 +260,9 @@ window4.onNewFrame((width, height) => {
     drawWindow4(width, height);
 });
 
-// Set up keyboard event handlers
-app.keyboard.onKeyPress((event) => {
-    console.log(`→ Key Press: ${event.key} (keycode: ${event.keycode}, keysym: ${event.keysym})`);
+// Set up per-window keyboard event handlers
+window4.keyboard.onKeyPress((event) => {
+    console.log(`→ [Window 4] Key Press: ${event.key} (keycode: ${event.keycode}, keysym: ${event.keysym})`);
     lastKeys.push(`[DOWN] ${event.key}`);
     if (lastKeys.length > 15) {
         lastKeys.shift();
@@ -269,8 +270,8 @@ app.keyboard.onKeyPress((event) => {
     drawWindow4(window4.getWidth(), window4.getHeight());
 });
 
-app.keyboard.onKeyRelease((event) => {
-    console.log(`→ Key Release: ${event.key} (keycode: ${event.keycode}, keysym: ${event.keysym})`);
+window4.keyboard.onKeyRelease((event) => {
+    console.log(`→ [Window 4] Key Release: ${event.key} (keycode: ${event.keycode}, keysym: ${event.keysym})`);
     lastKeys.push(`[UP] ${event.key}`);
     if (lastKeys.length > 15) {
         lastKeys.shift();

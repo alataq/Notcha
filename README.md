@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.3.0-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.3.1-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -199,10 +199,34 @@ if (focused) {
 
 ### Keyboard
 
-The `app.keyboard` property provides access to keyboard events. Keyboard events are only captured when a window has focus.
+Notcha supports both global keyboard events (via `app.keyboard`) and per-window keyboard events (via `window.keyboard`). Per-window events only fire when that specific window has focus, making it easy to handle keyboard input for individual windows.
+
+#### Per-Window Keyboard (Recommended)
+
+#### `window.keyboard.onKeyPress(callback: (event: KeyEvent) => void): void`
+Registers a callback for key press events on this specific window. Only fires when this window is focused.
+
+```typescript
+window.keyboard.onKeyPress((event) => {
+    console.log(`Key pressed in this window: ${event.key}`);
+});
+```
+
+#### `window.keyboard.onKeyRelease(callback: (event: KeyEvent) => void): void`
+Registers a callback for key release events on this specific window.
+
+```typescript
+window.keyboard.onKeyRelease((event) => {
+    console.log(`Key released in this window: ${event.key}`);
+});
+```
+
+#### Global Keyboard Events
+
+The `app.keyboard` property provides access to global keyboard events across all windows.
 
 #### `app.keyboard.onKeyPress(callback: (event: KeyEvent) => void): void`
-Registers a callback for key press events.
+Registers a callback for key press events across all windows.
 
 ```typescript
 app.keyboard.onKeyPress((event) => {
@@ -211,7 +235,7 @@ app.keyboard.onKeyPress((event) => {
 ```
 
 #### `app.keyboard.onKeyRelease(callback: (event: KeyEvent) => void): void`
-Registers a callback for key release events.
+Registers a callback for key release events across all windows.
 
 ```typescript
 app.keyboard.onKeyRelease((event) => {
@@ -254,7 +278,7 @@ const BLACK = 0x000000;
 
 ## Examples
 
-### Keyboard Input
+### Keyboard Input (Per-Window)
 
 ```typescript
 import { App } from "notcha";
@@ -267,8 +291,8 @@ window.open();
 
 let keys: string[] = [];
 
-// Listen to keyboard events
-app.keyboard.onKeyPress((event) => {
+// Listen to keyboard events for this specific window
+window.keyboard.onKeyPress((event) => {
     keys.push(`[DOWN] ${event.key}`);
     if (keys.length > 10) keys.shift();
     
@@ -285,7 +309,7 @@ app.keyboard.onKeyPress((event) => {
     window.flush();
 });
 
-app.keyboard.onKeyRelease((event) => {
+window.keyboard.onKeyRelease((event) => {
     console.log(`Key released: ${event.key}`);
 });
 ```
@@ -482,6 +506,12 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.3.1
+- Added per-window keyboard event handling with `window.keyboard.onKeyPress()` and `window.keyboard.onKeyRelease()`
+- Keyboard events now only fire for the focused window when using per-window handlers
+- Global `app.keyboard` handlers still available for backward compatibility
+- Improved keyboard event dispatching for multi-window applications
 
 ### v0.3.0
 - Added full keyboard event support (KeyPress, KeyRelease)
