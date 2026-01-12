@@ -143,16 +143,15 @@ pub export fn drawText(win: c.Window, x: c_int, y: c_int, text: [*:0]const u8, c
     };
 
     const font = c.XLoadQueryFont(d, font_name);
-    if (font != null) {
-        _ = c.XSetFont(d, gc, font.?.fid);
+    if (font) |f| {
+        _ = c.XSetFont(d, gc, f.*.fid);
         _ = c.XDrawString(d, pixmap, gc, x, y, text, @intCast(std.mem.len(text)));
-        _ = c.XFreeFont(d, font);
+        _ = c.XFreeFont(d, f);
     } else {
         // Fallback to default font if loading fails
         _ = c.XDrawString(d, pixmap, gc, x, y, text, @intCast(std.mem.len(text)));
     }
 }
-
 pub export fn flushWindow(win: c.Window) void {
     if (display == null) return;
     const d = display orelse return;
