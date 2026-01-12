@@ -51,7 +51,7 @@ function ensureLib() {
                 returns: FFIType.void,
             },
             drawText: {
-                args: [FFIType.u64, FFIType.i32, FFIType.i32, FFIType.cstring, FFIType.u64],
+                args: [FFIType.u64, FFIType.i32, FFIType.i32, FFIType.cstring, FFIType.u64, FFIType.i32],
                 returns: FFIType.void,
             },
             checkWindowClosed: {
@@ -158,9 +158,9 @@ export function setBackground(win: bigint, color: number): void {
     l.symbols.setBackground(win, BigInt(color));
 }
 
-export function drawText(win: bigint, x: number, y: number, text: string, color: number): void {
+export function drawText(win: bigint, x: number, y: number, text: string, color: number, size: number = 2): void {
     const l = ensureLib();
-    l.symbols.drawText(win, x, y, Buffer.from(text + "\0", "utf-8"), BigInt(color));
+    l.symbols.drawText(win, x, y, Buffer.from(text + "\0", "utf-8"), BigInt(color), size);
 }
 
 export function checkWindowClosed(win: bigint): boolean {

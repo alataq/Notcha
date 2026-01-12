@@ -122,7 +122,7 @@ pub export fn setBackground(win: c.Window, color: c_ulong) void {
     _ = c.XFillRectangle(d, pixmap, gc, 0, 0, @intCast(attrs.width), @intCast(attrs.height));
 }
 
-pub export fn drawText(win: c.Window, x: c_int, y: c_int, text: [*:0]const u8, color: c_ulong) void {
+pub export fn drawText(win: c.Window, x: c_int, y: c_int, text: [*:0]const u8, color: c_ulong, size: c_int) void {
     if (display == null) return;
 
     const d = display orelse return;
@@ -130,7 +130,27 @@ pub export fn drawText(win: c.Window, x: c_int, y: c_int, text: [*:0]const u8, c
     const gc = c.XDefaultGC(d, screen);
 
     _ = c.XSetForeground(d, gc, color);
-    _ = c.XDrawString(d, pixmap, gc, x, y, text, @intCast(std.mem.len(text)));
+
+    // Load font based on size
+    // X11 fonts: negative size means pixels, positive means points (1/10 point)
+    // We'll use pixel sizes: 12 (small), 14 (medium/default), 18 (large), 24 (xlarge)
+    const font_name = switch (size) {
+        1 => "-*-fixed-medium-r-*-*-12-*-*-*-*-*-*-*", // small
+        2 => "-*-fixed-medium-r-*-*-14-*-*-*-*-*-*-*", // medium (default)
+        3 => "-*-fixed-medium-r-*-*-18-*-*-*-*-*-*-*", // large
+        4 => "-*-fixed-medium-r-*-*-24-*-*-*-*-*-*-*", // xlarge
+        else => "-*-fixed-medium-r-*-*-14-*-*-*-*-*-*-*", // default to medium
+    };
+
+    const font = c.XLoadQueryFont(d, font_name);
+    if (font != null) {
+        _ = c.XSetFont(d, gc, font.?.fid);
+        _ = c.XDrawString(d, pixmap, gc, x, y, text, @intCast(std.mem.len(text)));
+        _ = c.XFreeFont(d, font);
+    } else {
+        // Fallback to default font if loading fails
+        _ = c.XDrawString(d, pixmap, gc, x, y, text, @intCast(std.mem.len(text)));
+    }
 }
 
 pub export fn flushWindow(win: c.Window) void {

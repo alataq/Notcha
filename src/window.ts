@@ -82,13 +82,13 @@ export class Window {
         return this;
     }
 
-    write(x: number, y: number, text: string, color: number = 0x000000): Window {
+    write(x: number, y: number, text: string, color: number = 0x000000, size: number = 2): Window {
         if (this.windowHandle === null) {
             console.warn("Cannot write text: window is not open");
             return this;
         }
         
-        native.drawText(this.windowHandle, x, y, text, color);
+        native.drawText(this.windowHandle, x, y, text, color, size);
         return this;
     }
 

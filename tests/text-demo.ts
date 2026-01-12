@@ -13,29 +13,36 @@ export function createTextDemo(app: any): Window {
         const centerX = Math.floor(w / 2);
         
         // Title
-        window.write(centerX - 60, 50, "Text Rendering", BLACK);
+        window.write(centerX - 60, 50, "Text Rendering", BLACK, 3); // large
         
         // Subtitle
-        window.write(centerX - 80, 80, "Built with Notcha", GRAY);
+        window.write(centerX - 80, 80, "Built with Notcha", GRAY, 2); // medium
         
-        // Sample text
+        // Sample text with different sizes
         const lines = [
-            "This is a text demo window.",
-            "It demonstrates text rendering",
-            "capabilities in Notcha.",
-            "",
-            "Features:",
-            "- Multi-line text",
-            "- Color support",
-            "- Framebuffer rendering",
-            "- Flicker-free updates",
+            { text: "Text Size Demo", size: 4 }, // xlarge
+            { text: "This demonstrates variable text sizes", size: 2 }, // medium
+            { text: "", size: 2 },
+            { text: "Size 1 (Small) - 12px", size: 1 },
+            { text: "Size 2 (Medium) - 14px", size: 2 },
+            { text: "Size 3 (Large) - 18px", size: 3 },
+            { text: "Size 4 (XLarge) - 24px", size: 4 },
+            { text: "", size: 2 },
+            { text: "Features:", size: 2 },
+            { text: "- Multi-line text", size: 1 },
+            { text: "- Color support", size: 1 },
+            { text: "- Variable text sizes", size: 1 },
+            { text: "- Framebuffer rendering", size: 1 },
         ];
         
         let yPos = 120;
         for (const line of lines) {
             if (yPos > h - 30) break;
-            window.write(50, yPos, line, line.startsWith("-") ? BLUE : BLACK);
-            yPos += 25;
+            const color = line.text.startsWith("-") ? BLUE : BLACK;
+            window.write(50, yPos, line.text, color, line.size);
+            // Adjust spacing based on text size
+            const spacing = line.size === 4 ? 35 : line.size === 3 ? 28 : line.size === 1 ? 18 : 22;
+            yPos += spacing;
         }
         
         window.flush();
