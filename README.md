@@ -209,9 +209,10 @@ notcha/
 - ✅ Window close events
 
 ### v0.2 (Planned)
-- 🚧 Mouse input events
-- 🚧 Keyboard input events
 - 🚧 Window resize support
+
+### v0.3 (Planned)
+- 🚧 Mouse and keyboard event handling
 
 ## Development
 
