@@ -9,9 +9,10 @@ var screen: c_int = 0;
 var wm_delete_window: c.Atom = 0;
 var wm_protocols: c.Atom = 0;
 
-// Track closed windows
+// Track closed windows and redraw flags
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 var closed_windows: std.AutoHashMap(c.Window, bool) = undefined;
+var redraw_needed: std.AutoHashMap(c.Window, bool) = undefined;
 var windows_init = false;
 
 pub export fn initDisplay() bool {
@@ -27,6 +28,7 @@ pub export fn initDisplay() bool {
 
     if (!windows_init) {
         closed_windows = std.AutoHashMap(c.Window, bool).init(gpa.allocator());
+        redraw_needed = std.AutoHashMap(c.Window, bool).init(gpa.allocator());
         windows_init = true;
     }
 
@@ -40,6 +42,7 @@ pub export fn closeDisplay() void {
     }
     if (windows_init) {
         closed_windows.deinit();
+        redraw_needed.deinit();
         windows_init = false;
     }
 }
@@ -118,6 +121,11 @@ pub export fn processEvents() bool {
                 }
             }
         }
+        
+        // Handle Expose and ConfigureNotify events
+        if (event.type == c.Expose or event.type == c.ConfigureNotify) {
+            redraw_needed.put(event.xexpose.window, true) catch {};
+        }
     }
 
     return true;
@@ -128,13 +136,43 @@ pub export fn checkWindowClosed(win: c.Window) bool {
     return closed_windows.get(win) orelse false;
 }
 
+pub export fn getWindowWidth(win: c.Window) c_int {
+    if (display == null) return 0;
+
+    const d = display orelse return 0;
+    var attrs: c.XWindowAttributes = undefined;
+    _ = c.XGetWindowAttributes(d, win, &attrs);
+    return attrs.width;
+}
+
+pub export fn getWindowHeight(win: c.Window) c_int {
+    if (display == null) return 0;
+
+    const d = display orelse return 0;
+    var attrs: c.XWindowAttributes = undefined;
+    _ = c.XGetWindowAttributes(d, win, &attrs);
+    return attrs.height;
+}
+
+pub export fn checkWindowNeedsRedraw(win: c.Window) bool {
+    if (!windows_init) return false;
+    
+    const needs_redraw = redraw_needed.get(win) orelse false;
+    if (needs_redraw) {
+        // Clear the flag after checking
+        _ = redraw_needed.remove(win);
+    }
+    return needs_redraw;
+}
+
 pub export fn destroyWindow(win: c.Window) void {
     if (display) |d| {
         _ = c.XDestroyWindow(d, win);
         _ = c.XFlush(d);
     }
-    // Remove from closed windows map
+    // Remove from maps
     if (windows_init) {
         _ = closed_windows.remove(win);
+        _ = redraw_needed.remove(win);
     }
 }

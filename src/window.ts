@@ -6,6 +6,7 @@ export class Window {
     private width: number = 800;
     private height: number = 600;
     private closeCallback: (() => void) | null = null;
+    private newFrameCallback: ((width: number, height: number) => void) | null = null;
 
     constructor(title?: string, width: number = 800, height: number = 600) {
         if (title) {
@@ -77,6 +78,11 @@ export class Window {
         return this;
     }
 
+    onNewFrame(callback: (width: number, height: number) => void): Window {
+        this.newFrameCallback = callback;
+        return this;
+    }
+
     checkClosed(): boolean {
         if (this.windowHandle === null) {
             return true;
@@ -94,5 +100,34 @@ export class Window {
             }
         }
         return closed;
+    }
+
+    checkNewFrame(): boolean {
+        if (this.windowHandle === null) {
+            return false;
+        }
+
+        const needsRedraw = native.checkWindowNeedsRedraw(this.windowHandle);
+        if (needsRedraw && this.newFrameCallback) {
+            // Get current dimensions
+            const newWidth = native.getWindowWidth(this.windowHandle);
+            const newHeight = native.getWindowHeight(this.windowHandle);
+            
+            // Update stored dimensions
+            this.width = newWidth;
+            this.height = newHeight;
+            
+            // Trigger callback
+            this.newFrameCallback(newWidth, newHeight);
+        }
+        return needsRedraw;
+    }
+
+    getWidth(): number {
+        return this.width;
+    }
+
+    getHeight(): number {
+        return this.height;
     }
 }

@@ -31,10 +31,11 @@ export class App {
         // Process events
         native.processEvents();
         
-        // Check if any windows were closed
+        // Check if any windows were closed and check for new frames
         for (const win of this.windows) {
             if (win.isOpen()) {
                 win.checkClosed();
+                win.checkNewFrame();
             }
         }
         

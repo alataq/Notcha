@@ -58,6 +58,18 @@ function ensureLib() {
                 args: [FFIType.u64],
                 returns: FFIType.bool,
             },
+            getWindowWidth: {
+                args: [FFIType.u64],
+                returns: FFIType.i32,
+            },
+            getWindowHeight: {
+                args: [FFIType.u64],
+                returns: FFIType.i32,
+            },
+            checkWindowNeedsRedraw: {
+                args: [FFIType.u64],
+                returns: FFIType.bool,
+            },
         });
     } catch (e) {
         console.error("Failed to load native library:", e);
@@ -112,4 +124,19 @@ export function drawText(win: bigint, x: number, y: number, text: string, color:
 export function checkWindowClosed(win: bigint): boolean {
     const l = ensureLib();
     return l.symbols.checkWindowClosed(win);
+}
+
+export function getWindowWidth(win: bigint): number {
+    const l = ensureLib();
+    return l.symbols.getWindowWidth(win);
+}
+
+export function getWindowHeight(win: bigint): number {
+    const l = ensureLib();
+    return l.symbols.getWindowHeight(win);
+}
+
+export function checkWindowNeedsRedraw(win: bigint): boolean {
+    const l = ensureLib();
+    return l.symbols.checkWindowNeedsRedraw(win);
 }
