@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.4.0-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.4.1-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -148,8 +148,8 @@ Draws a pixel to the framebuffer at the specified coordinates. Returns `this` fo
 
 **Note:** Does not update the screen until `flush()` is called.
 
-#### `window.write(x: number, y: number, text: string, color?: number): Window`
-Renders text to the framebuffer at the specified position. Default color is black (0x000000). Returns `this` for chaining.
+#### `window.write(x: number, y: number, text: string, color?: number, size?: number): Window`
+Renders text to the framebuffer at the specified position. Default color is black (0x000000). Size can be 1 (small/12px), 2 (medium/14px, default), 3 (large/18px), or 4 (xlarge/24px). Returns `this` for chaining.
 
 **Note:** Does not update the screen until `flush()` is called.
 
@@ -361,6 +361,17 @@ const GREEN = 0x00FF00;
 const BLUE = 0x0000FF;
 const WHITE = 0xFFFFFF;
 const BLACK = 0x000000;
+```
+
+### Text Sizes
+
+Text can be rendered in 4 different sizes:
+
+```typescript
+window.write(10, 10, "Small text", 0x000000, 1);   // Size 1: 12px
+window.write(10, 30, "Medium text", 0x000000, 2);  // Size 2: 14px (default)
+window.write(10, 55, "Large text", 0x000000, 3);   // Size 3: 18px
+window.write(10, 85, "XLarge text", 0x000000, 4);  // Size 4: 24px
 ```
 
 ## Examples
@@ -593,6 +604,13 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.4.1
+- Added variable text size support with `window.write()` size parameter
+- Four text sizes available: 1 (small/12px), 2 (medium/14px), 3 (large/18px), 4 (xlarge/24px)
+- Size parameter is optional, defaults to 2 (medium)
+- Uses X11 fixed fonts for consistent rendering
+- Updated text demo to showcase all text sizes
 
 ### v0.4.0
 - Added full mouse event support (Press, Release, Move, Scroll)
