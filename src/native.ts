@@ -70,6 +70,10 @@ function ensureLib() {
                 args: [FFIType.u64],
                 returns: FFIType.bool,
             },
+            flushWindow: {
+                args: [FFIType.u64],
+                returns: FFIType.void,
+            },
         });
     } catch (e) {
         console.error("Failed to load native library:", e);
@@ -139,4 +143,9 @@ export function getWindowHeight(win: bigint): number {
 export function checkWindowNeedsRedraw(win: bigint): boolean {
     const l = ensureLib();
     return l.symbols.checkWindowNeedsRedraw(win);
+}
+
+export function flushWindow(win: bigint): void {
+    const l = ensureLib();
+    l.symbols.flushWindow(win);
 }

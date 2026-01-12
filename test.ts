@@ -101,6 +101,7 @@ function drawWindow1(w: number, h: number) {
     if (h > 100) {
         window1.write(centerX - 60, h - 30, "Colorful pixels!", BLUE);
     }
+    window1.flush();
 }
 
 console.log("4. Window 1 - Drawing graphics...");
@@ -157,6 +158,7 @@ function drawWindow2(w: number, h: number) {
             }
         }
     }
+    window2.flush();
 }
 
 console.log("\n5. Window 2 - Writing text...");
@@ -204,6 +206,7 @@ function drawWindow3(w: number, h: number) {
         }
         yPos += 30;
     }
+    window3.flush();
 }
 
 console.log("\n6. Window 3 - Color gradient...");

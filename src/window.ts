@@ -130,4 +130,12 @@ export class Window {
     getHeight(): number {
         return this.height;
     }
+
+    flush(): void {
+        if (this.windowHandle === null) {
+            console.warn("Cannot flush: window is not open");
+            return;
+        }
+        native.flushWindow(this.windowHandle);
+    }
 }
