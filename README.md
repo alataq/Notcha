@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.4.1-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.5.0-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -14,6 +14,7 @@
 🎯 **Event Handling** - Window close callbacks and resize/redraw detection  
 ⌨️ **Keyboard Input** - Full keyboard event support with focus tracking  
 🖱️ **Mouse Input** - Complete mouse support (clicks, movement, scroll)  
+🔊 **Sound Support** - Audio playback with ALSA (beeps, tones, custom sounds)  
 📦 **Zero Dependencies** - Pre-built native binary included, ready to use  
 ⚡ **Double Buffering** - Smooth, flicker-free rendering with automatic framebuffer
 
@@ -35,7 +36,7 @@ bun add notcha
 ```
 
 **Requirements:**
-- Linux: X11 development libraries (`sudo apt install libx11-dev`)
+- Linux: X11 and ALSA development libraries (`sudo apt install libx11-dev libasound2-dev`)
 - Other platforms: X11 server (XWayland, WSLg, XQuartz, etc.)
 
 ## Quick Start
@@ -374,6 +375,113 @@ window.write(10, 55, "Large text", 0x000000, 3);   // Size 3: 18px
 window.write(10, 85, "XLarge text", 0x000000, 4);  // Size 4: 24px
 ```
 
+## Sound API
+
+Notcha provides audio playback support via ALSA (Advanced Linux Sound Architecture). The sound system generates tones programmatically using sine wave synthesis.
+
+### Initialization
+
+The sound system is automatically initialized when you call `app.start()`. If audio initialization fails (e.g., no sound hardware), the app will continue to run but sound playback will not be available.
+
+```typescript
+const app = new App();
+app.start(); // Automatically initializes sound
+
+// Check if sound is available
+if (app.sound.isInitialized()) {
+    console.log("Sound system ready!");
+}
+```
+
+### Sound Methods
+
+#### `app.sound.beep(): void`
+Plays a standard beep sound (440 Hz, 200ms, medium volume).
+
+```typescript
+app.sound.beep(); // Standard beep sound
+```
+
+#### `app.sound.click(): void`
+Plays a short click sound (1000 Hz, 50ms, low volume).
+
+```typescript
+app.sound.click(); // UI click feedback
+```
+
+#### `app.sound.success(): void`
+Plays a success/confirmation sound (600 Hz, 150ms, medium volume).
+
+```typescript
+app.sound.success(); // Success notification
+```
+
+#### `app.sound.error(): void`
+Plays an error/alert sound (200 Hz, 300ms, higher volume).
+
+```typescript
+app.sound.error(); // Error notification
+```
+
+#### `app.sound.playTone(frequency: number, duration: number, volume?: number): void`
+Plays a custom tone with specified frequency and duration.
+
+```typescript
+// Play a custom tone
+app.sound.playTone(880, 500, 0.5); // 880 Hz, 500ms, 50% volume
+
+// Volume is optional (default: 0.5, range: 0.0 to 1.0)
+app.sound.playTone(440, 1000); // 440 Hz, 1000ms, default volume
+```
+
+#### `app.sound.isInitialized(): boolean`
+Checks if the sound system is initialized and ready.
+
+```typescript
+if (app.sound.isInitialized()) {
+    app.sound.beep();
+} else {
+    console.log("Sound not available");
+}
+```
+
+### Sound Example
+
+```typescript
+import { App } from "notcha";
+
+const app = new App();
+app.start();
+
+const window = app.createWindow("Sound Demo", 400, 300);
+window.open();
+
+window.setBackground(0xFFFFFF);
+window.write(50, 100, "Click to play sound!", 0x000000);
+window.flush();
+
+// Play beep on mouse click
+window.mouse.onMousePress((event) => {
+    if (event.button === 1) { // Left click
+        app.sound.beep();
+    }
+});
+```
+
+### Audio Specifications
+
+- **Sample Rate**: 44100 Hz (CD quality)
+- **Format**: 16-bit signed PCM
+- **Channels**: 2 (stereo)
+- **Buffer Size**: 1024 frames
+- **Synthesis**: Real-time sine wave generation
+
+### Platform Requirements
+
+- Linux with ALSA support (most Linux distributions)
+- `libasound2-dev` package for building from source
+- Audio hardware/driver configured
+
 ## Examples
 
 ### Keyboard Input (Per-Window)
@@ -604,6 +712,15 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.5.0
+- Added audio playback support via ALSA (Advanced Linux Sound Architecture)
+- Added `app.sound` API for sound playback
+- Four preset sounds: `beep()`, `click()`, `success()`, `error()`
+- Custom tone generation with `playTone(frequency, duration, volume)`
+- Real-time sine wave synthesis (44.1kHz, 16-bit stereo)
+- Non-fatal audio initialization - app runs without sound hardware
+- Requires `libasound2-dev` for building from source
 
 ### v0.4.1
 - Added variable text size support with `window.write()` size parameter

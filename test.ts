@@ -5,6 +5,7 @@ import { createTextDemo } from "./tests/text-demo";
 import { createColorDemo } from "./tests/color-demo";
 import { createKeyboardDemo } from "./tests/keyboard-demo";
 import { createMouseDemo } from "./tests/mouse-demo";
+import { createSoundDemo } from "./tests/sound-demo";
 
 console.log("=== Notcha Test Suite ===\n");
 
@@ -24,6 +25,7 @@ let textWindow: any = null;
 let colorWindow: any = null;
 let keyboardWindow: any = null;
 let mouseWindow: any = null;
+let soundWindow: any = null;
 
 // Create main menu with button handlers
 const mainMenu = createMainMenu(
@@ -71,6 +73,15 @@ const mainMenu = createMainMenu(
             mouseWindow = createMouseDemo(app);
         } else {
             console.log("→ Mouse Demo already open");
+        }
+    },
+    // Sound Demo
+    () => {
+        if (!soundWindow || !soundWindow.isOpen()) {
+            console.log("→ Opening Sound Demo...");
+            soundWindow = createSoundDemo(app);
+        } else {
+            console.log("→ Sound Demo already open");
         }
     }
 );

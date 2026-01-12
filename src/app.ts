@@ -1,17 +1,20 @@
 import { Window } from "./window";
 import { Keyboard, type KeyEvent } from "./keyboard";
 import { Mouse, type MouseEvent } from "./mouse";
+import { Sound } from "./sound";
 import * as native from "./native";
 
 export class App {
     public windows: Window[] = [];
     public keyboard: Keyboard;
     public mouse: Mouse;
+    public sound: Sound;
     private running: boolean = false;
 
     constructor() {
         this.keyboard = new Keyboard();
         this.mouse = new Mouse();
+        this.sound = new Sound();
     }
 
     start() {
@@ -26,6 +29,9 @@ export class App {
             console.error("Failed to initialize display");
             return;
         }
+
+        // Initialize audio (optional, non-fatal if it fails)
+        this.sound.init();
 
         this.running = true;
         console.log("App started");
@@ -142,6 +148,9 @@ export class App {
                 win.close();
             }
         }
+
+        // Close audio
+        this.sound.close();
 
         // Close display
         native.closeDisplay();

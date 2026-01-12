@@ -4,6 +4,7 @@ const c = clib.c;
 
 const keyboard = @import("keyboard.zig");
 const mouse = @import("mouse.zig");
+const sound = @import("sound.zig");
 
 // Export these for keyboard.zig
 pub var display: ?*c.Display = null;
@@ -361,4 +362,15 @@ pub export fn destroyWindow(win: c.Window) void {
         _ = redraw_needed.remove(win);
         _ = pixmaps.remove(win);
     }
+}
+
+// Force sound module to be referenced so its exports are included
+comptime {
+    _ = sound.initAudio;
+    _ = sound.closeAudio;
+    _ = sound.playTone;
+    _ = sound.playBeep;
+    _ = sound.playClick;
+    _ = sound.playSuccess;
+    _ = sound.playError;
 }

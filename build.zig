@@ -14,13 +14,14 @@ pub fn build(b: *std.Build) void {
 
     lib.linkLibC();
     lib.linkSystemLibrary("X11");
+    lib.linkSystemLibrary("asound");
 
     b.installArtifact(lib);
 
     // Print build info
     const build_info = b.addSystemCommand(&[_][]const u8{
         "echo",
-        "Building Notcha with X11 backend and keyboard support",
+        "Building Notcha with X11 backend, keyboard, mouse, and sound support",
     });
     b.getInstallStep().dependOn(&build_info.step);
 }

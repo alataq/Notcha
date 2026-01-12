@@ -112,6 +112,35 @@ function ensureLib() {
                 args: [FFIType.ptr, FFIType.ptr],
                 returns: FFIType.void,
             },
+            // Sound functions
+            initAudio: {
+                args: [],
+                returns: FFIType.bool,
+            },
+            closeAudio: {
+                args: [],
+                returns: FFIType.void,
+            },
+            playTone: {
+                args: [FFIType.i32, FFIType.i32, FFIType.f32],
+                returns: FFIType.bool,
+            },
+            playBeep: {
+                args: [],
+                returns: FFIType.bool,
+            },
+            playClick: {
+                args: [],
+                returns: FFIType.bool,
+            },
+            playSuccess: {
+                args: [],
+                returns: FFIType.bool,
+            },
+            playError: {
+                args: [],
+                returns: FFIType.bool,
+            },
         });
     } catch (e) {
         console.error("Failed to load native library:", e);
@@ -259,6 +288,41 @@ export function getMousePosition(x: Int32Array, y: Int32Array): void {
     l.symbols.getMousePosition(x, y);
 }
 
+export function initAudio(): boolean {
+    const l = ensureLib();
+    return l.symbols.initAudio();
+}
+
+export function closeAudio(): void {
+    const l = ensureLib();
+    l.symbols.closeAudio();
+}
+
+export function playTone(frequency: number, duration: number, volume: number): boolean {
+    const l = ensureLib();
+    return l.symbols.playTone(frequency, duration, volume);
+}
+
+export function playBeep(): boolean {
+    const l = ensureLib();
+    return l.symbols.playBeep();
+}
+
+export function playClick(): boolean {
+    const l = ensureLib();
+    return l.symbols.playClick();
+}
+
+export function playSuccess(): boolean {
+    const l = ensureLib();
+    return l.symbols.playSuccess();
+}
+
+export function playError(): boolean {
+    const l = ensureLib();
+    return l.symbols.playError();
+}
+
 export const native = {
     initDisplay,
     closeDisplay,
@@ -282,4 +346,11 @@ export const native = {
     getNextMouseEvent,
     clearMouseEvents,
     getMousePosition,
+    initAudio,
+    closeAudio,
+    playTone,
+    playBeep,
+    playClick,
+    playSuccess,
+    playError,
 };
