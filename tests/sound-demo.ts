@@ -23,28 +23,31 @@ export function createSoundDemo(app: App): Window {
     const window = app.createWindow("Sound Test", 700, 700);
     
     function draw(w: number, h: number) {
+        const menuHeight = window.getMenuBarHeight();
+        
         window.setBackground(0xFAFAFA);
         
         const centerX = Math.floor(w / 2);
+        const contentY = menuHeight + 20;
         
         // Title
-        window.write(centerX - 50, 40, "Sound Test", BLACK, 3);
+        window.write(centerX - 50, contentY, "Sound Test", BLACK, 3);
         
         // Status
         const audioStatus = app.sound.isInitialized() ? "Initialized" : "Not Initialized";
         const statusColor = app.sound.isInitialized() ? GREEN : GRAY;
-        window.write(20, 80, `Audio Status: ${audioStatus}`, statusColor, 2);
+        window.write(20, contentY + 40, `Audio Status: ${audioStatus}`, statusColor, 2);
         
         // Section headers
-        window.write(20, 105, "Tone Generation:", BLACK, 2);
-        window.write(20, 420, "Audio File Playback (from Internet):", BLACK, 2);
+        window.write(20, contentY + 65, "Tone Generation:", BLACK, 2);
+        window.write(20, contentY + 380, "Audio File Playback (from Internet):", BLACK, 2);
         
         // Button dimensions
         const buttonWidth = Math.min(280, w - 100);
         const buttonHeight = 45;
         const buttonX = Math.floor((w - buttonWidth) / 2);
         const spacing = 55;
-        const startY = 120;
+        const startY = contentY + 80;
         
         // Create sound buttons
         buttons = [
@@ -88,6 +91,9 @@ export function createSoundDemo(app: App): Window {
         window.write(20, h - 60, "Beep: 440Hz | Click: 1000Hz | Success: 600Hz", GRAY, 1);
         window.write(20, h - 45, "Error: 200Hz | Custom: 880Hz", GRAY, 1);
         window.write(20, h - 20, "Audio files are downloaded from internet in real-time", MAGENTA, 1);
+        
+        // Draw menu bar last so it's on top
+        window.drawMenuBar();
         
         window.flush();
     }

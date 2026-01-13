@@ -12,10 +12,14 @@ export function createColorDemo(app: any): Window {
     const window = app.createWindow("Color Test", 500, 400);
     
     function draw(w: number, h: number) {
+        const menuHeight = window.getMenuBarHeight();
+        
         window.setBackground(0xFFFFFF); // White background
         
+        const contentY = menuHeight + 10;
+        
         // Title
-        window.write(w / 2 - 50, 30, "Color Palette", BLACK);
+        window.write(w / 2 - 50, contentY, "Color Palette", BLACK);
         
         const colors = [
             { name: "Red", color: RED },
@@ -27,7 +31,7 @@ export function createColorDemo(app: any): Window {
         ];
         
         const startX = 50;
-        let yPos = 70;
+        let yPos = contentY + 40;
         const barWidth = w - 150;
         const barHeight = 30;
         
@@ -47,6 +51,9 @@ export function createColorDemo(app: any): Window {
             }
             yPos += 45;
         }
+        
+        // Draw menu bar last so it's on top
+        window.drawMenuBar();
         
         window.flush();
     }

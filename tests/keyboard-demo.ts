@@ -12,26 +12,32 @@ export function createKeyboardDemo(app: any): Window {
     const window = app.createWindow("Keyboard Test", 600, 400);
     
     function draw(w: number, h: number) {
+        const menuHeight = window.getMenuBarHeight();
+        
         window.setBackground(0xFAFAFA);
         
         const centerX = Math.floor(w / 2);
+        const contentY = menuHeight + 20;
         
         // Title
-        window.write(centerX - 80, 40, "Keyboard Event Test", BLACK);
+        window.write(centerX - 80, contentY, "Keyboard Event Test", BLACK);
         
         // Instructions
-        window.write(20, 80, "Type on this window to see keyboard events", GRAY);
-        window.write(20, 110, "Focus: " + (window.isFocused() ? "YES" : "NO"), window.isFocused() ? GREEN : RED);
-        window.write(20, 130, "(Per-window keyboard handling)", BLUE);
+        window.write(20, contentY + 40, "Type on this window to see keyboard events", GRAY);
+        window.write(20, contentY + 70, "Focus: " + (window.isFocused() ? "YES" : "NO"), window.isFocused() ? GREEN : RED);
+        window.write(20, contentY + 90, "(Per-window keyboard handling)", BLUE);
         
         // Display last keys
-        window.write(20, 160, "Recent Keys:", BLACK);
-        let yPos = 190;
+        window.write(20, contentY + 120, "Recent Keys:", BLACK);
+        let yPos = contentY + 150;
         for (let i = Math.max(0, lastKeys.length - 8); i < lastKeys.length; i++) {
             if (yPos + 20 > h) break;
             window.write(40, yPos, lastKeys[i]!, BLUE);
             yPos += 25;
         }
+        
+        // Draw menu bar last so it's on top
+        window.drawMenuBar();
         
         window.flush();
     }

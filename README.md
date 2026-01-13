@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.5.1-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -375,6 +375,161 @@ window.write(10, 55, "Large text", 0x000000, 3);   // Size 3: 18px
 window.write(10, 85, "XLarge text", 0x000000, 4);  // Size 4: 24px
 ```
 
+## Menu API
+
+Notcha provides native menu bar support with dropdown menus. Menus are rendered directly in the window framebuffer and provide a familiar desktop application experience.
+
+### Creating Menus
+
+```typescript
+import { type Menu } from "notcha";
+
+const fileMenu: Menu = {
+    label: "File",
+    items: [
+        { label: "New", action: () => console.log("New") },
+        { label: "Open", action: () => console.log("Open") },
+        { separator: true },
+        { label: "Exit", action: () => window.close() },
+    ]
+};
+
+// Add menu to window
+window.addMenu(fileMenu);
+
+// Draw menu bar in your draw function
+function draw(width, height) {
+    window.setBackground(0xFFFFFF);
+    
+    // Always draw menu bar first
+    window.drawMenuBar();
+    
+    // Draw content below menu bar
+    const menuHeight = window.getMenuBarHeight(); // Usually 30px
+    window.write(20, menuHeight + 20, "Content", 0x000000);
+    
+    window.flush();
+}
+```
+
+### Menu Structure
+
+#### Menu Interface
+```typescript
+interface Menu {
+    label: string;       // Menu title shown in menu bar
+    items: MenuItem[];   // Dropdown items
+}
+```
+
+#### MenuItem Interface
+```typescript
+interface MenuItem {
+    label: string;              // Item text
+    action?: () => void;        // Callback when clicked
+    separator?: boolean;        // Draw separator line
+    enabled?: boolean;          // Disabled items are grayed out
+    submenu?: MenuItem[];       // Nested submenu (coming soon)
+}
+```
+
+### Menu Methods
+
+#### `window.addMenu(menu: Menu): void`
+Adds a menu to the window's menu bar.
+
+```typescript
+window.addMenu({
+    label: "Edit",
+    items: [
+        { label: "Undo", action: () => undo() },
+        { label: "Redo", action: () => redo() },
+    ]
+});
+```
+
+#### `window.drawMenuBar(): void`
+Renders the menu bar. Call this in your draw function.
+
+```typescript
+function draw(width, height) {
+    window.setBackground(0xFFFFFF);
+    window.drawMenuBar(); // Draw menu first
+    // ... rest of your drawing
+    window.flush();
+}
+```
+
+#### `window.getMenuBarHeight(): number`
+Returns the height of the menu bar (usually 30px) to offset your content.
+
+```typescript
+const menuHeight = window.getMenuBarHeight();
+const contentStartY = menuHeight + 10;
+```
+
+### Menu Features
+
+- **Hover Effects**: Menu items highlight on mouse hover
+- **Click to Open**: Click menu title to show dropdown
+- **Click to Close**: Click outside or select item to close
+- **Separators**: Visual dividers between menu sections
+- **Disabled Items**: Gray out items that can't be used
+- **Non-Blocking**: Menus work with your event loop
+
+### Complete Menu Example
+
+```typescript
+import { App, type Menu } from "notcha";
+
+const app = new App();
+app.start();
+
+const window = app.createWindow("Menu Example", 600, 400);
+
+// Define menus
+const fileMenu: Menu = {
+    label: "File",
+    items: [
+        { label: "New", action: () => console.log("New file") },
+        { label: "Open", action: () => console.log("Open file") },
+        { label: "Save", action: () => console.log("Save file") },
+        { separator: true },
+        { label: "Disabled Item", enabled: false },
+        { separator: true },
+        { label: "Exit", action: () => window.close() },
+    ]
+};
+
+const editMenu: Menu = {
+    label: "Edit",
+    items: [
+        { label: "Cut", action: () => console.log("Cut") },
+        { label: "Copy", action: () => console.log("Copy") },
+        { label: "Paste", action: () => console.log("Paste") },
+    ]
+};
+
+// Add menus
+window.addMenu(fileMenu);
+window.addMenu(editMenu);
+
+// Draw function
+function draw(width, height) {
+    window.setBackground(0xFAFAFA);
+    window.drawMenuBar();
+    
+    const menuHeight = window.getMenuBarHeight();
+    window.write(20, menuHeight + 20, "My Application", 0x000000, 3);
+    
+    window.flush();
+}
+
+window.onNewFrame((width, height) => draw(width, height));
+window.open();
+draw(window.getWidth(), window.getHeight());
+```
+
 ## Sound API
 
 Notcha provides audio playback support via ALSA (Advanced Linux Sound Architecture). The sound system generates tones programmatically using sine wave synthesis.
@@ -733,6 +888,18 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.6.0
+- Added menu bar and dropdown menu system
+- Added `window.setMenu(menus)` API for creating application menus
+- Menu bars render at top of window (30px fixed height)
+- Dropdown menus open on menu title click
+- Menu items support hover effects and action callbacks
+- Support for disabled menu items (grayed out, non-interactive)
+- Support for menu separators (horizontal divider lines)
+- Custom framebuffer-based rendering (no native X11 menus)
+- Mouse event routing for menu interaction
+- Added menu demo showcasing File/Edit/Help menus
 
 ### v0.5.1
 - Added audio file playback support with `app.sound.playFile(pathOrUrl)`

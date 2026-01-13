@@ -14,29 +14,35 @@ export function createMouseDemo(app: any): Window {
     const window = app.createWindow("Mouse Test", 600, 500);
     
     function draw(w: number, h: number) {
+        const menuHeight = window.getMenuBarHeight();
+        
         window.setBackground(0xFAFAFA);
         
         const centerX = Math.floor(w / 2);
+        const contentY = menuHeight + 20;
         
         // Title
-        window.write(centerX - 70, 40, "Mouse Event Test", BLACK);
+        window.write(centerX - 70, contentY, "Mouse Event Test", BLACK);
         
         // Instructions
-        window.write(20, 80, "Use your mouse in this window", GRAY);
-        window.write(20, 110, "Focus: " + (window.isFocused() ? "YES" : "NO"), window.isFocused() ? GREEN : RED);
-        window.write(20, 130, "(Per-window mouse handling)", BLUE);
+        window.write(20, contentY + 40, "Use your mouse in this window", GRAY);
+        window.write(20, contentY + 70, "Focus: " + (window.isFocused() ? "YES" : "NO"), window.isFocused() ? GREEN : RED);
+        window.write(20, contentY + 90, "(Per-window mouse handling)", BLUE);
         
         // Display mouse position
-        window.write(20, 160, `Mouse Position: (${lastMousePos.x}, ${lastMousePos.y})`, MAGENTA);
+        window.write(20, contentY + 120, `Mouse Position: (${lastMousePos.x}, ${lastMousePos.y})`, MAGENTA);
         
         // Display last events
-        window.write(20, 190, "Recent Events:", BLACK);
-        let yPos = 220;
+        window.write(20, contentY + 150, "Recent Events:", BLACK);
+        let yPos = contentY + 180;
         for (let i = Math.max(0, mouseEvents.length - 8); i < mouseEvents.length; i++) {
             if (yPos + 20 > h) break;
             window.write(40, yPos, mouseEvents[i]!, BLUE);
             yPos += 25;
         }
+        
+        // Draw menu bar last so it's on top
+        window.drawMenuBar();
         
         window.flush();
     }

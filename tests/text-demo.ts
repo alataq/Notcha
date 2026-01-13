@@ -8,15 +8,18 @@ export function createTextDemo(app: any): Window {
     const window = app.createWindow("Text Demo", 600, 400);
     
     function draw(w: number, h: number) {
+        const menuHeight = window.getMenuBarHeight();
+        
         window.setBackground(0xFFFFFF); // White background
         
         const centerX = Math.floor(w / 2);
+        const contentY = menuHeight + 20;
         
         // Title
-        window.write(centerX - 60, 50, "Text Rendering", BLACK, 3); // large
+        window.write(centerX - 60, contentY + 10, "Text Rendering", BLACK, 3); // large
         
         // Subtitle
-        window.write(centerX - 80, 80, "Built with Notcha", GRAY, 2); // medium
+        window.write(centerX - 80, contentY + 40, "Built with Notcha", GRAY, 2); // medium
         
         // Sample text with different sizes
         const lines = [
@@ -35,7 +38,7 @@ export function createTextDemo(app: any): Window {
             { text: "- Framebuffer rendering", size: 1 },
         ];
         
-        let yPos = 120;
+        let yPos = contentY + 80;
         for (const line of lines) {
             if (yPos > h - 30) break;
             const color = line.text.startsWith("-") ? BLUE : BLACK;
@@ -44,6 +47,9 @@ export function createTextDemo(app: any): Window {
             const spacing = line.size === 4 ? 35 : line.size === 3 ? 28 : line.size === 1 ? 18 : 22;
             yPos += spacing;
         }
+        
+        // Draw menu bar last so it's on top
+        window.drawMenuBar();
         
         window.flush();
     }

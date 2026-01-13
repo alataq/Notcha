@@ -9,18 +9,24 @@ export function createGraphicsDemo(app: any): Window {
     const window = app.createWindow("Graphics Demo", 800, 600);
     
     function draw(w: number, h: number) {
+        const menuHeight = window.getMenuBarHeight();
+        
         window.setBackground(0xF0F0F0); // Light gray background
+        
+        // Adjust content area to be below menu
+        const contentY = menuHeight;
+        const contentHeight = h - menuHeight;
         
         // Draw centered cross
         const centerX = Math.floor(w / 2);
-        const centerY = Math.floor(h / 2);
+        const centerY = Math.floor(contentY + contentHeight / 2);
         const lineThickness = 5;
-        const lineLength = Math.min(w, h) * 0.6;
+        const lineLength = Math.min(w, contentHeight) * 0.6;
         
         // Horizontal line
         for (let y = centerY - lineThickness; y < centerY + lineThickness; y++) {
             for (let x = centerX - lineLength / 2; x < centerX + lineLength / 2; x++) {
-                if (x >= 0 && x < w && y >= 0 && y < h) {
+                if (x >= 0 && x < w && y >= contentY && y < h) {
                     window.draw(x, y, RED);
                 }
             }
@@ -29,7 +35,7 @@ export function createGraphicsDemo(app: any): Window {
         // Vertical line
         for (let x = centerX - lineThickness; x < centerX + lineThickness; x++) {
             for (let y = centerY - lineLength / 2; y < centerY + lineLength / 2; y++) {
-                if (x >= 0 && x < w && y >= 0 && y < h) {
+                if (x >= 0 && x < w && y >= contentY && y < h) {
                     window.draw(x, y, BLUE);
                 }
             }
@@ -39,9 +45,9 @@ export function createGraphicsDemo(app: any): Window {
         const squareSize = 90;
         const margin = 10;
         
-        // Top-left green
+        // Top-left green (adjusted for menu)
         for (let x = margin; x < margin + squareSize && x < w; x++) {
-            for (let y = margin; y < margin + squareSize && y < h; y++) {
+            for (let y = contentY + margin; y < contentY + margin + squareSize && y < h; y++) {
                 window.draw(x, y, GREEN);
             }
         }
@@ -49,14 +55,14 @@ export function createGraphicsDemo(app: any): Window {
         // Top-right yellow
         if (w > margin + squareSize) {
             for (let x = w - margin - squareSize; x < w - margin; x++) {
-                for (let y = margin; y < margin + squareSize && y < h; y++) {
+                for (let y = contentY + margin; y < contentY + margin + squareSize && y < h; y++) {
                     window.draw(x, y, YELLOW);
                 }
             }
         }
         
         // Bottom-left blue
-        if (h > margin + squareSize) {
+        if (h > contentY + margin + squareSize) {
             for (let x = margin; x < margin + squareSize && x < w; x++) {
                 for (let y = h - margin - squareSize; y < h - margin; y++) {
                     window.draw(x, y, BLUE);
@@ -65,13 +71,16 @@ export function createGraphicsDemo(app: any): Window {
         }
         
         // Bottom-right red
-        if (w > margin + squareSize && h > margin + squareSize) {
+        if (w > margin + squareSize && h > contentY + margin + squareSize) {
             for (let x = w - margin - squareSize; x < w - margin; x++) {
                 for (let y = h - margin - squareSize; y < h - margin; y++) {
                     window.draw(x, y, RED);
                 }
             }
         }
+        
+        // Draw menu bar last so it's on top
+        window.drawMenuBar();
         
         window.flush();
     }
