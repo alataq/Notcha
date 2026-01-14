@@ -74,7 +74,9 @@ export class Mouse {
     onMove?: MouseMoveCallback,
     onScroll?: MouseScrollCallback
   ): void {
-    // Process all mouse events
+    // Collect all events first, then process
+    const events: MouseEvent[] = [];
+    
     while (native.hasMouseEvents()) {
       const eventTypePtr = new BigUint64Array(1);
       const buttonPtr = new Uint32Array(1);
@@ -97,7 +99,34 @@ export class Mouse {
         y: yPtr[0]!,
         windowHandle: Number(windowHandlePtr[0]),
       };
-
+      
+      events.push(event);
+    }
+    
+    // Skip redundant move events - only keep the last one
+    const processedEvents: MouseEvent[] = [];
+    let lastMoveEvent: MouseEvent | null = null;
+    
+    for (const event of events) {
+      if (event.eventType === MouseEventType.Move) {
+        lastMoveEvent = event; // Keep updating to latest
+      } else {
+        // Non-move event - flush any pending move event first
+        if (lastMoveEvent) {
+          processedEvents.push(lastMoveEvent);
+          lastMoveEvent = null;
+        }
+        processedEvents.push(event);
+      }
+    }
+    
+    // Don't forget the last move event
+    if (lastMoveEvent) {
+      processedEvents.push(lastMoveEvent);
+    }
+    
+    // Now process the optimized event list
+    for (const event of processedEvents) {
       // Call per-window callback first if provided
       if (event.eventType === MouseEventType.Press && onPress) {
         onPress(event);

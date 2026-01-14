@@ -9,6 +9,7 @@ import { createKeyboardDemo } from "./tests/keyboard-demo";
 import { createMouseDemo } from "./tests/mouse-demo";
 import { createSoundDemo } from "./tests/sound-demo";
 import { createMenuDemo } from "./tests/menu-demo";
+import { createScrollDemo } from "./tests/scroll-demo";
 
 console.log("=== Notcha Test Suite ===\n");
 
@@ -30,6 +31,7 @@ let keyboardWindow: any = null;
 let mouseWindow: any = null;
 let soundWindow: any = null;
 let menuWindow: any = null;
+let scrollWindow: any = null;
 
 // Helper function to add default app menu to a window
 function addDefaultMenu(window: Window, app: App): void {
@@ -93,6 +95,16 @@ function addDefaultMenu(window: Window, app: App): void {
                         console.log("→ Opening Sound Demo from menu...");
                         soundWindow = createSoundDemo(app);
                         addDefaultMenu(soundWindow, app);
+                    }
+                } 
+            },
+            { 
+                label: "Scroll Demo", 
+                action: () => { 
+                    if (!scrollWindow || !scrollWindow.isOpen()) {
+                        console.log("→ Opening Scroll Demo from menu...");
+                        scrollWindow = createScrollDemo(app);
+                        addDefaultMenu(scrollWindow, app);
                     }
                 } 
             },

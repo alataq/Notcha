@@ -1,6 +1,6 @@
 {
   "name": "notcha",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "A lightweight window management library using native X11 bindings via Zig and TypeScript",
   "module": "src/index.ts",
   "type": "module",

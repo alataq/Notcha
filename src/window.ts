@@ -2,6 +2,7 @@ import * as native from "./native";
 import type { KeyEvent } from "./keyboard";
 import type { MouseEvent } from "./mouse";
 import { MenuBar, type Menu } from "./menu";
+import { Scrollbar } from "./scrollbar";
 
 export class Window {
     public title: string = "Notcha";
@@ -11,6 +12,8 @@ export class Window {
     private closeCallback: (() => void) | null = null;
     private newFrameCallback: ((width: number, height: number) => void) | null = null;
     private menuBar: MenuBar | null = null;
+    private scrollbar: Scrollbar | null = null;
+    private contentHeight: number = 0;
     
     // Per-window keyboard callbacks
     private keyPressCallbacks: Array<(event: KeyEvent) => void> = [];
@@ -244,6 +247,122 @@ export class Window {
      */
     getMenuBarHeight(): number {
         return this.menuBar ? this.menuBar.getMenuBarHeight() : 0;
+    }
+
+    /**
+     * Enable scrolling for this window
+     * Call this before opening the window
+     */
+    enableScrolling(): void {
+        if (!this.scrollbar) {
+            this.scrollbar = new Scrollbar();
+            
+            // Hook into mouse scroll events
+            this.mouse.onScroll((event) => {
+                if (this.scrollbar) {
+                    // Scroll up = negative delta, scroll down = positive delta
+                    const delta = event.button === 4 ? -1 : 1; // ScrollUp = -1, ScrollDown = +1
+                    const changed = this.scrollbar.handleScroll(delta);
+                    if (changed && this.newFrameCallback) {
+                        this.newFrameCallback(this.width, this.height);
+                    }
+                }
+            });
+            
+            // Hook into mouse press for scrollbar dragging
+            const originalPressCallbacks = [...this.mousePressCallbacks];
+            this.mousePressCallbacks = [];
+            this.mouse.onMousePress((event) => {
+                if (this.scrollbar) {
+                    const menuHeight = this.getMenuBarHeight();
+                    const handled = this.scrollbar.handleMousePress(event.x, event.y, this.width, this.height, menuHeight);
+                    if (handled && this.newFrameCallback) {
+                        this.newFrameCallback(this.width, this.height);
+                        return;
+                    }
+                }
+                // Trigger original callbacks
+                for (const callback of originalPressCallbacks) {
+                    callback(event);
+                }
+            });
+            
+            // Hook into mouse release
+            const originalReleaseCallbacks = [...this.mouseReleaseCallbacks];
+            this.mouseReleaseCallbacks = [];
+            this.mouse.onMouseRelease((event) => {
+                if (this.scrollbar) {
+                    this.scrollbar.handleMouseRelease();
+                }
+                // Trigger original callbacks
+                for (const callback of originalReleaseCallbacks) {
+                    callback(event);
+                }
+            });
+            
+            // Hook into mouse move for scrollbar dragging and hover
+            const originalMoveCallbacks = [...this.mouseMoveCallbacks];
+            this.mouseMoveCallbacks = [];
+            this.mouse.onMouseMove((event) => {
+                if (this.scrollbar) {
+                    const menuHeight = this.getMenuBarHeight();
+                    const changed = this.scrollbar.handleMouseMove(event.x, event.y, this.width, this.height, menuHeight);
+                    // Always redraw during drag for instant feedback
+                    if (changed && this.newFrameCallback) {
+                        this.newFrameCallback(this.width, this.height);
+                    }
+                }
+                // Trigger original callbacks
+                for (const callback of originalMoveCallbacks) {
+                    callback(event);
+                }
+            });
+        }
+    }
+
+    /**
+     * Set content height for scrolling calculation
+     * Call this in your draw function after you know the total content height
+     */
+    setContentHeight(height: number): void {
+        this.contentHeight = height;
+        if (this.scrollbar) {
+            const menuHeight = this.getMenuBarHeight();
+            const visibleHeight = this.height - menuHeight;
+            this.scrollbar.updateDimensions(height, visibleHeight);
+        }
+    }
+
+    /**
+     * Get current scroll offset
+     */
+    getScrollOffset(): number {
+        return this.scrollbar ? this.scrollbar.getScrollOffset() : 0;
+    }
+
+    /**
+     * Get visible content width (accounting for scrollbar if present)
+     */
+    getVisibleWidth(): number {
+        if (this.scrollbar && this.scrollbar.isScrollable()) {
+            return this.scrollbar.getVisibleWidth(this.width);
+        }
+        return this.width;
+    }
+
+    /**
+     * Draw the scrollbar (call this at the end of your draw function)
+     */
+    drawScrollbar(): void {
+        if (this.scrollbar && this.scrollbar.isScrollable() && this.windowHandle !== null) {
+            const menuHeight = this.getMenuBarHeight();
+            this.scrollbar.draw(
+                (x, y, color) => this.draw(x, y, color),
+                this.width,
+                this.height,
+                menuHeight
+            );
+        }
     }
 
     /**

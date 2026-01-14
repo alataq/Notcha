@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.6.0-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -658,6 +658,206 @@ window.mouse.onMousePress((event) => {
 - `libasound2-dev` and `libsndfile1-dev` packages for building from source
 - Audio hardware/driver configured
 
+## Scrollbar API
+
+Notcha provides automatic scrollbar support for windows with content that exceeds the visible area. When enabled, a vertical scrollbar appears on the right edge of the window, allowing users to scroll through content using the mouse wheel, dragging the scrollbar thumb, or clicking on the track.
+
+### Quick Start
+
+```typescript
+import { App } from "notcha";
+
+const app = new App();
+app.start();
+
+const window = app.createWindow("Scrolling Content", 600, 400);
+
+// Enable scrolling BEFORE opening the window
+window.enableScrolling();
+
+function draw(width, height) {
+    const scrollOffset = window.getScrollOffset();
+    const visibleWidth = window.getVisibleWidth();
+    const menuHeight = window.getMenuBarHeight();
+    
+    window.setBackground(0xFFFFFF);
+    
+    // Draw content with scroll offset
+    let yPos = menuHeight + 20;
+    for (let i = 0; i < 50; i++) {
+        const itemY = yPos + (i * 40) - scrollOffset;
+        
+        // Only draw if visible
+        if (itemY >= menuHeight && itemY < height) {
+            window.write(20, itemY, `Item #${i + 1}`, 0x000000);
+        }
+    }
+    
+    // Update content height for scrollbar calculation
+    const totalContentHeight = menuHeight + 20 + (50 * 40) + 20;
+    window.setContentHeight(totalContentHeight);
+    
+    // Draw scrollbar (if content exceeds window height)
+    window.drawScrollbar();
+    
+    // Draw menu bar last
+    window.drawMenuBar();
+    
+    window.flush();
+}
+
+window.onNewFrame((width, height) => draw(width, height));
+window.open();
+draw(window.getWidth(), window.getHeight());
+```
+
+### Scrollbar Methods
+
+#### `window.enableScrolling(): void`
+Enables scrollbar support for the window. Must be called **before** `window.open()`.
+
+```typescript
+const window = app.createWindow("My Window", 600, 400);
+window.enableScrolling(); // Enable before opening
+window.open();
+```
+
+#### `window.setContentHeight(height: number): void`
+Sets the total height of your content. Call this in your draw function after calculating the full content height. The scrollbar will automatically appear if content height exceeds the visible window height.
+
+```typescript
+const totalContentHeight = menuHeight + items.length * itemHeight + padding;
+window.setContentHeight(totalContentHeight);
+```
+
+#### `window.getScrollOffset(): number`
+Returns the current vertical scroll offset in pixels. Use this to offset your content drawing.
+
+```typescript
+const scrollOffset = window.getScrollOffset();
+const actualY = originalY - scrollOffset; // Apply offset to Y positions
+```
+
+#### `window.getVisibleWidth(): number`
+Returns the visible width of the content area (window width minus scrollbar width if scrollbar is visible). Use this instead of `window.getWidth()` when positioning content.
+
+```typescript
+const visibleWidth = window.getVisibleWidth(); // Width minus 12px if scrolling
+window.write(visibleWidth - 100, y, "Right-aligned", 0x000000);
+```
+
+#### `window.drawScrollbar(): void`
+Draws the scrollbar. Call this in your draw function **after** drawing your content but **before** `window.flush()`.
+
+```typescript
+function draw(width, height) {
+    // ... draw content ...
+    window.drawScrollbar(); // Draw scrollbar on top
+    window.flush();
+}
+```
+
+### Scrollbar Features
+
+- **Automatic Appearance**: Scrollbar only appears when content height exceeds window height
+- **Mouse Wheel Scrolling**: Scroll content using mouse wheel (20px per scroll event)
+- **Drag Scrollbar Thumb**: Click and drag the scrollbar thumb to scroll
+- **Click Track to Jump**: Click anywhere on the scrollbar track to jump to that position
+- **Visual Feedback**: Thumb changes color on hover and when being dragged
+- **Bounds Checking**: Automatic clamping to prevent scrolling beyond content
+- **Menu Bar Integration**: Scrollbar automatically accounts for menu bar height
+- **12px Width**: Scrollbar is 12 pixels wide, positioned at the right edge
+- **30px Minimum Thumb**: Scrollbar thumb has a minimum height of 30 pixels
+
+### Scrollbar Colors
+
+```typescript
+// Default colors (customizable in source)
+const TRACK_COLOR = 0xE0E0E0;        // Light gray track
+const THUMB_COLOR = 0xA0A0A0;        // Gray thumb (normal)
+const THUMB_HOVER_COLOR = 0x808080;  // Darker gray (hover)
+const THUMB_ACTIVE_COLOR = 0x606060; // Darkest gray (dragging)
+```
+
+### Complete Scrollbar Example
+
+```typescript
+import { App } from "notcha";
+
+const app = new App();
+app.start();
+
+const window = app.createWindow("Scroll Demo", 600, 400);
+window.enableScrolling();
+
+window.addMenu({
+    label: "File",
+    items: [
+        { label: "Exit", action: () => window.close() }
+    ]
+});
+
+const items = Array.from({ length: 50 }, (_, i) => `Item ${i + 1}`);
+
+function draw(width, height) {
+    const scrollOffset = window.getScrollOffset();
+    const visibleWidth = window.getVisibleWidth();
+    const menuHeight = window.getMenuBarHeight();
+    
+    window.setBackground(0xFFFFFF);
+    
+    // Draw items
+    const itemHeight = 40;
+    const padding = 20;
+    let yPos = menuHeight + padding;
+    
+    for (let i = 0; i < items.length; i++) {
+        const itemY = yPos + (i * itemHeight) - scrollOffset;
+        
+        // Only draw visible items
+        if (itemY + itemHeight >= menuHeight && itemY < height) {
+            // Background
+            const bgColor = i % 2 === 0 ? 0xF0F0F0 : 0xFFFFFF;
+            for (let x = 20; x < visibleWidth - 20; x++) {
+                for (let y = itemY; y < itemY + itemHeight - 5 && y < height; y++) {
+                    if (y >= menuHeight) {
+                        window.draw(x, y, bgColor);
+                    }
+                }
+            }
+            
+            // Text
+            window.write(40, itemY + 12, items[i], 0x000000, 2);
+        }
+    }
+    
+    // Set content height
+    const totalHeight = menuHeight + padding + (items.length * itemHeight) + padding;
+    window.setContentHeight(totalHeight);
+    
+    // Draw scrollbar
+    window.drawScrollbar();
+    
+    // Draw menu bar
+    window.drawMenuBar();
+    
+    window.flush();
+}
+
+window.onNewFrame((width, height) => draw(width, height));
+window.open();
+draw(window.getWidth(), window.getHeight());
+```
+
+### Best Practices
+
+1. **Call `enableScrolling()` before `open()`**: Scrollbar must be enabled before opening the window
+2. **Apply scroll offset to Y positions**: Subtract `getScrollOffset()` from all Y coordinates
+3. **Use `getVisibleWidth()` for layout**: Account for scrollbar width when positioning content
+4. **Update content height dynamically**: Call `setContentHeight()` whenever content changes
+5. **Optimize rendering**: Only draw items that are visible in the viewport
+6. **Draw order**: Content → Scrollbar → Menu Bar → Flush
+
 ## Examples
 
 ### Keyboard Input (Per-Window)
@@ -888,6 +1088,21 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.7.0
+- Added automatic scrollbar support for windows with overflowing content
+- Added `window.enableScrolling()` to enable scrollbar before opening window
+- Added `window.setContentHeight(height)` to specify total content height
+- Added `window.getScrollOffset()` to get current scroll position
+- Added `window.getVisibleWidth()` to get width accounting for scrollbar
+- Added `window.drawScrollbar()` to render scrollbar in draw function
+- Scrollbar automatically appears when content exceeds window height
+- Mouse wheel scrolling support (20px per scroll event)
+- Drag scrollbar thumb to scroll (visual feedback with hover/active states)
+- Click scrollbar track to jump to position
+- 12px wide vertical scrollbar with 30px minimum thumb height
+- Scrollbar integrates with menu bar system
+- Added scroll demo showcasing 50-item scrolling list
 
 ### v0.6.0
 - Added menu bar and dropdown menu system
