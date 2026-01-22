@@ -120,6 +120,29 @@ export class Window {
         }
     }
 
+    setTitle(title: string): Window {
+        this.title = title;
+        if (this.windowHandle !== null) {
+            native.setWindowTitle(this.windowHandle, title);
+        }
+        return this;
+    }
+
+    setIcon(iconData: Uint32Array, width: number, height: number): Window {
+        if (this.windowHandle === null) {
+            console.warn("Cannot set icon: window is not open");
+            return this;
+        }
+        
+        if (iconData.length !== width * height) {
+            console.warn("Icon data size doesn't match width * height");
+            return this;
+        }
+        
+        native.setWindowIcon(this.windowHandle, iconData, width, height);
+        return this;
+    }
+
     isOpen(): boolean {
         return this.windowHandle !== null;
     }

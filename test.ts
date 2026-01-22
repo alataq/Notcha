@@ -31,6 +31,13 @@ console.log(`   DE: ${System.getDesktopEnvironment()}`);
 
 console.log("\n3. Creating main menu window...\n");
 
+// Helper to create a simple solid color icon
+function createIcon(color: number, size: number = 32): Uint32Array {
+    const icon = new Uint32Array(size * size);
+    icon.fill(color); // ARGB format
+    return icon;
+}
+
 // Track demo windows to prevent duplicates
 let graphicsWindow: any = null;
 let textWindow: any = null;
@@ -167,6 +174,7 @@ const mainMenu = createMainMenu(
         if (!graphicsWindow || !graphicsWindow.isOpen()) {
             console.log("→ Opening Graphics Demo...");
             graphicsWindow = createGraphicsDemo(app);
+            graphicsWindow.setIcon(createIcon(0xFFFF6B6B), 32, 32); // Red
             addDefaultMenu(graphicsWindow, app);
         } else {
             console.log("→ Graphics Demo already open");
@@ -177,6 +185,7 @@ const mainMenu = createMainMenu(
         if (!textWindow || !textWindow.isOpen()) {
             console.log("→ Opening Text Demo...");
             textWindow = createTextDemo(app);
+            textWindow.setIcon(createIcon(0xFF4ECDC4), 32, 32); // Teal
             addDefaultMenu(textWindow, app);
         } else {
             console.log("→ Text Demo already open");
@@ -187,6 +196,7 @@ const mainMenu = createMainMenu(
         if (!colorWindow || !colorWindow.isOpen()) {
             console.log("→ Opening Color Demo...");
             colorWindow = createColorDemo(app);
+            colorWindow.setIcon(createIcon(0xFFFFBE0B), 32, 32); // Yellow
             addDefaultMenu(colorWindow, app);
         } else {
             console.log("→ Color Demo already open");
@@ -197,6 +207,7 @@ const mainMenu = createMainMenu(
         if (!keyboardWindow || !keyboardWindow.isOpen()) {
             console.log("→ Opening Keyboard Demo...");
             keyboardWindow = createKeyboardDemo(app);
+            keyboardWindow.setIcon(createIcon(0xFFFB5607), 32, 32); // Orange
             addDefaultMenu(keyboardWindow, app);
         } else {
             console.log("→ Keyboard Demo already open");
@@ -207,6 +218,7 @@ const mainMenu = createMainMenu(
         if (!mouseWindow || !mouseWindow.isOpen()) {
             console.log("→ Opening Mouse Demo...");
             mouseWindow = createMouseDemo(app);
+            mouseWindow.setIcon(createIcon(0xFF8338EC), 32, 32); // Purple
             addDefaultMenu(mouseWindow, app);
         } else {
             console.log("→ Mouse Demo already open");
@@ -217,6 +229,7 @@ const mainMenu = createMainMenu(
         if (!soundWindow || !soundWindow.isOpen()) {
             console.log("→ Opening Sound Demo...");
             soundWindow = createSoundDemo(app);
+            soundWindow.setIcon(createIcon(0xFF3A86FF), 32, 32); // Blue
             addDefaultMenu(soundWindow, app);
         } else {
             console.log("→ Sound Demo already open");
@@ -227,6 +240,7 @@ const mainMenu = createMainMenu(
         if (!menuWindow || !menuWindow.isOpen()) {
             console.log("→ Opening Menu Demo...");
             menuWindow = createMenuDemo(app);
+            menuWindow.setIcon(createIcon(0xFF06D6A0), 32, 32); // Green
         } else {
             console.log("→ Menu Demo already open");
         }
@@ -236,12 +250,16 @@ const mainMenu = createMainMenu(
         if (!systemInfoWindow || !systemInfoWindow.isOpen()) {
             console.log("→ Opening System Info...");
             systemInfoWindow = createSystemInfoDemo(app);
+            systemInfoWindow.setIcon(createIcon(0xFF118AB2), 32, 32); // Dark Blue
             addDefaultMenu(systemInfoWindow, app);
         } else {
             console.log("→ System Info already open");
         }
     }
 );
+
+// Set main menu icon
+mainMenu.setIcon(createIcon(0xFF95D5B2), 32, 32); // Light Green
 
 console.log("\n✓ Test suite ready!");
 console.log("✓ Click buttons in the main menu to open demo windows");

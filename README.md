@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.7.3-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.7.4-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -135,6 +135,25 @@ Opens and displays the window. Automatically creates the framebuffer.
 
 #### `window.close()`
 Closes the window and frees the framebuffer.
+
+#### `window.setTitle(title: string): Window`
+Changes the window title dynamically. Returns `this` for chaining.
+
+```typescript
+window.setTitle("New Title");
+```
+
+#### `window.setIcon(iconData: Uint32Array, width: number, height: number): Window`
+Sets the window icon. Icon data must be in ARGB format (32-bit per pixel). Returns `this` for chaining.
+
+```typescript
+// Create a simple 16x16 red icon
+const iconData = new Uint32Array(16 * 16);
+for (let i = 0; i < iconData.length; i++) {
+    iconData[i] = 0xFFFF0000; // ARGB: fully opaque red
+}
+window.setIcon(iconData, 16, 16);
+```
 
 #### `window.isOpen(): boolean`
 Returns `true` if the window is currently open.
@@ -1170,6 +1189,11 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.7.4
+- Added `window.setTitle(title)` to dynamically change window title
+- Added `window.setIcon(iconData, width, height)` to set window icon
+- Icons support ARGB format (32-bit per pixel)
 
 ### v0.7.2
 - Added `System` class with static utility methods for system information

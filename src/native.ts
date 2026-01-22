@@ -158,6 +158,14 @@ function ensureLib() {
                 args: [],
                 returns: FFIType.i32,
             },
+            setWindowTitle: {
+                args: [FFIType.u64, FFIType.cstring],
+                returns: FFIType.void,
+            },
+            setWindowIcon: {
+                args: [FFIType.u64, FFIType.ptr, FFIType.i32, FFIType.i32],
+                returns: FFIType.void,
+            },
         });
     } catch (e) {
         console.error("Failed to load native library:", e);
@@ -362,6 +370,19 @@ export function getScreenHeight(): number {
     return l.symbols.getScreenHeight();
 }
 
+export function setWindowTitle(win: bigint, title: string): void {
+    const l = ensureLib();
+    const buffer = Buffer.from(title + "\0", "utf-8");
+    l.symbols.setWindowTitle(win, buffer);
+}
+
+export function setWindowIcon(win: bigint, iconData: Uint32Array, width: number, height: number): void {
+    const l = ensureLib();
+    // Convert Uint32Array to a buffer that FFI can handle
+    const buffer = new Uint32Array(iconData);
+    l.symbols.setWindowIcon(win, buffer.buffer, width, height);
+}
+
 export const native = {
     initDisplay,
     closeDisplay,
@@ -396,4 +417,6 @@ export const native = {
     playAudioFile,
     getScreenWidth,
     getScreenHeight,
+    setWindowTitle,
+    setWindowIcon,
 };

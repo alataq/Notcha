@@ -386,7 +386,39 @@ pub export fn getScreenHeight() c_int {
     return c.XDisplayHeight(d, screen);
 }
 
-// Force sound module to be referenced so its exports are included
+pub export fn setWindowTitle(win: c.Window, title: [*:0]const u8) void {
+    const d = display orelse return;
+    _ = c.XStoreName(d, win, title);
+    _ = c.XFlush(d);
+}
+
+pub export fn setWindowIcon(win: c.Window, icon_data: [*]const u32, width: c_int, height: c_int) void {
+    const d = display orelse return;
+
+    // Calculate total size: 2 (for width and height) + width * height
+    const pixel_count = @as(usize, @intCast(width)) * @as(usize, @intCast(height));
+    const data_size = 2 + pixel_count;
+
+    // Allocate buffer for icon data (use c_ulong for X11 compatibility on 64-bit systems)
+    var buffer = gpa.allocator().alloc(c_ulong, data_size) catch return;
+    defer gpa.allocator().free(buffer);
+
+    // Set width and height
+    buffer[0] = @intCast(width);
+    buffer[1] = @intCast(height);
+
+    // Copy pixel data (ARGB format) - convert from u32 to c_ulong
+    var i: usize = 0;
+    while (i < pixel_count) : (i += 1) {
+        buffer[2 + i] = @as(c_ulong, icon_data[i]);
+    }
+
+    // Set the _NET_WM_ICON property
+    const net_wm_icon = c.XInternAtom(d, "_NET_WM_ICON", 0);
+    const cardinal_atom: c.Atom = 6; // XA_CARDINAL value
+    _ = c.XChangeProperty(d, win, net_wm_icon, cardinal_atom, 32, c.PropModeReplace, @ptrCast(buffer.ptr), @intCast(data_size));
+    _ = c.XFlush(d);
+} // Force sound module to be referenced so its exports are included
 comptime {
     _ = sound.initAudio;
     _ = sound.closeAudio;
