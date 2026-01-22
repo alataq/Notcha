@@ -29,7 +29,7 @@ export function createMainMenu(
     onMenuDemo: () => void,
     onSystemInfoDemo: () => void
 ): Window {
-    const window = app.createWindow("Notcha Test Suite", 500, 650);
+    const window = app.createWindow("Notcha Test Suite", 500, 740);
     
     function draw(w: number, h: number) {
         window.setBackground(WHITE);
