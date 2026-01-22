@@ -23,10 +23,10 @@ export interface MouseEvent {
   windowHandle: number;
 }
 
-type MousePressCallback = (event: MouseEvent) => void;
-type MouseReleaseCallback = (event: MouseEvent) => void;
-type MouseMoveCallback = (event: MouseEvent) => void;
-type MouseScrollCallback = (event: MouseEvent) => void;
+export type MousePressCallback = (event: MouseEvent) => void;
+export type MouseReleaseCallback = (event: MouseEvent) => void;
+export type MouseMoveCallback = (event: MouseEvent) => void;
+export type MouseScrollCallback = (event: MouseEvent) => void;
 
 export class Mouse {
   private pressCallbacks: MousePressCallback[] = [];

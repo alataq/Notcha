@@ -8,8 +8,8 @@ export interface KeyEvent {
   key: string;
 }
 
-type KeyPressCallback = (event: KeyEvent) => void;
-type KeyReleaseCallback = (event: KeyEvent) => void;
+export type KeyPressCallback = (event: KeyEvent) => void;
+export type KeyReleaseCallback = (event: KeyEvent) => void;
 
 export class Keyboard {
   public keyPressCallbacks: KeyPressCallback[] = [];
