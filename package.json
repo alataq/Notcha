@@ -9,6 +9,8 @@
     "test": "bun run test.ts",
     "build": "zig build -Doptimize=ReleaseSafe",
     "dev": "zig build && bun run test.ts",
+    "docs": "typedoc",
+    "docs:watch": "typedoc --watch",
     "prepublishOnly": "bash build.sh"
   },
   "files": [
