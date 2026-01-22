@@ -376,6 +376,16 @@ pub export fn destroyWindow(win: c.Window) void {
     }
 }
 
+pub export fn getScreenWidth() c_int {
+    const d = display orelse return 0;
+    return c.XDisplayWidth(d, screen);
+}
+
+pub export fn getScreenHeight() c_int {
+    const d = display orelse return 0;
+    return c.XDisplayHeight(d, screen);
+}
+
 // Force sound module to be referenced so its exports are included
 comptime {
     _ = sound.initAudio;

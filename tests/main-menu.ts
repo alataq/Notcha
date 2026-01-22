@@ -26,9 +26,10 @@ export function createMainMenu(
     onKeyboardDemo: () => void,
     onMouseDemo: () => void,
     onSoundDemo: () => void,
-    onMenuDemo: () => void
+    onMenuDemo: () => void,
+    onSystemInfoDemo: () => void
 ): Window {
-    const window = app.createWindow("Notcha Test Suite", 500, 600);
+    const window = app.createWindow("Notcha Test Suite", 500, 650);
     
     function draw(w: number, h: number) {
         window.setBackground(WHITE);
@@ -55,6 +56,7 @@ export function createMainMenu(
             { x: buttonX, y: startY + spacing * 4, width: buttonWidth, height: buttonHeight, label: "Mouse Demo", action: onMouseDemo },
             { x: buttonX, y: startY + spacing * 5, width: buttonWidth, height: buttonHeight, label: "Sound Demo", action: onSoundDemo },
             { x: buttonX, y: startY + spacing * 6, width: buttonWidth, height: buttonHeight, label: "Menu Demo", action: onMenuDemo },
+            { x: buttonX, y: startY + spacing * 7, width: buttonWidth, height: buttonHeight, label: "System Info", action: onSystemInfoDemo },
         ];
         
         // Draw buttons

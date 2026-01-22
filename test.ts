@@ -1,4 +1,4 @@
-import { App } from "./src/app";
+import { App, System } from "./src/index";
 import { Window } from "./src/window";
 import { type Menu } from "./src/menu";
 import { createMainMenu } from "./tests/main-menu";
@@ -10,6 +10,7 @@ import { createMouseDemo } from "./tests/mouse-demo";
 import { createSoundDemo } from "./tests/sound-demo";
 import { createMenuDemo } from "./tests/menu-demo";
 import { createScrollDemo } from "./tests/scroll-demo";
+import { createSystemInfoDemo } from "./tests/system-info-demo";
 
 console.log("=== Notcha Test Suite ===\n");
 
@@ -21,7 +22,14 @@ const app = new App();
 console.log("2. Starting app (initializing X11 display)...");
 app.start();
 
-console.log("3. Creating main menu window...\n");
+// Display system information
+console.log("\n📊 System Information:");
+console.log(`   Screen: ${System.getScreenWidth()}x${System.getScreenHeight()}`);
+console.log(`   OS: ${System.getOS()} (${System.getOSInfo().type})`);
+console.log(`   Display: ${System.getDisplayServer()}`);
+console.log(`   DE: ${System.getDesktopEnvironment()}`);
+
+console.log("\n3. Creating main menu window...\n");
 
 // Track demo windows to prevent duplicates
 let graphicsWindow: any = null;
@@ -32,6 +40,7 @@ let mouseWindow: any = null;
 let soundWindow: any = null;
 let menuWindow: any = null;
 let scrollWindow: any = null;
+let systemInfoWindow: any = null;
 
 // Helper function to add default app menu to a window
 function addDefaultMenu(window: Window, app: App): void {
@@ -105,6 +114,16 @@ function addDefaultMenu(window: Window, app: App): void {
                         console.log("→ Opening Scroll Demo from menu...");
                         scrollWindow = createScrollDemo(app);
                         addDefaultMenu(scrollWindow, app);
+                    }
+                } 
+            },
+            { 
+                label: "System Info", 
+                action: () => { 
+                    if (!systemInfoWindow || !systemInfoWindow.isOpen()) {
+                        console.log("→ Opening System Info from menu...");
+                        systemInfoWindow = createSystemInfoDemo(app);
+                        addDefaultMenu(systemInfoWindow, app);
                     }
                 } 
             },
@@ -210,6 +229,16 @@ const mainMenu = createMainMenu(
             menuWindow = createMenuDemo(app);
         } else {
             console.log("→ Menu Demo already open");
+        }
+    },
+    // System Info Demo
+    () => {
+        if (!systemInfoWindow || !systemInfoWindow.isOpen()) {
+            console.log("→ Opening System Info...");
+            systemInfoWindow = createSystemInfoDemo(app);
+            addDefaultMenu(systemInfoWindow, app);
+        } else {
+            console.log("→ System Info already open");
         }
     }
 );

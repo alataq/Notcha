@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.7.1-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.7.2-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -858,6 +858,88 @@ draw(window.getWidth(), window.getHeight());
 5. **Optimize rendering**: Only draw items that are visible in the viewport
 6. **Draw order**: Content → Scrollbar → Menu Bar → Flush
 
+## System Utilities
+
+The `System` class provides static methods for accessing system information and screen dimensions.
+
+### Screen Information
+
+```typescript
+import { System } from "notcha";
+
+// Get screen dimensions
+const width = System.getScreenWidth();   // e.g., 1920
+const height = System.getScreenHeight(); // e.g., 1080
+
+// Or get both at once
+const { width, height } = System.getScreenSize();
+console.log(`Screen: ${width}x${height}`);
+```
+
+### OS and Environment Information
+
+```typescript
+// Get OS platform
+const os = System.getOS(); // 'linux', 'darwin', 'win32', etc.
+
+// Get detailed OS info
+const osInfo = System.getOSInfo();
+console.log(osInfo.platform);  // e.g., 'linux'
+console.log(osInfo.type);      // e.g., 'Linux'
+console.log(osInfo.release);   // e.g., '5.15.0-91-generic'
+console.log(osInfo.arch);      // e.g., 'x64'
+console.log(osInfo.hostname);  // e.g., 'my-laptop'
+
+// Check display server
+const display = System.getDisplayServer(); // 'x11', 'wayland', or 'unknown'
+const isX11 = System.isX11();              // true if running under X11
+const isWayland = System.isWayland();      // true if running under Wayland
+
+// Get desktop environment (Linux only)
+const de = System.getDesktopEnvironment(); // 'gnome', 'kde', 'xfce', etc.
+```
+
+### Memory and CPU Information
+
+```typescript
+// Get memory info (in bytes)
+const memory = System.getMemoryInfo();
+console.log(`Total: ${(memory.total / 1024 / 1024 / 1024).toFixed(2)} GB`);
+console.log(`Free: ${(memory.free / 1024 / 1024 / 1024).toFixed(2)} GB`);
+console.log(`Used: ${(memory.used / 1024 / 1024 / 1024).toFixed(2)} GB`);
+
+// Get CPU information
+const cpus = System.getCPUInfo();
+console.log(`CPU Cores: ${cpus.length}`);
+console.log(`Model: ${cpus[0].model}`);
+
+// Get system uptime (in seconds)
+const uptime = System.getUptime();
+console.log(`Uptime: ${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m`);
+```
+
+### Practical Use Cases
+
+```typescript
+// Center a window on screen
+const screenSize = System.getScreenSize();
+const windowWidth = 800;
+const windowHeight = 600;
+
+const x = Math.floor((screenSize.width - windowWidth) / 2);
+const y = Math.floor((screenSize.height - windowHeight) / 2);
+
+// Position window at calculated coordinates
+// (Note: X11 window positioning handled by window manager)
+
+// Display system info in about dialog
+const info = System.getOSInfo();
+const de = System.getDesktopEnvironment();
+window.write(20, 40, `OS: ${info.type} ${info.release}`, 0x000000);
+window.write(20, 65, `DE: ${de}`, 0x000000);
+window.write(20, 90, `Screen: ${System.getScreenWidth()}x${System.getScreenHeight()}`, 0x000000);
+```
+
 ## Examples
 
 ### Keyboard Input (Per-Window)
@@ -1088,6 +1170,19 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.7.2
+- Added `System` class with static utility methods for system information
+- Added `System.getScreenWidth()` and `System.getScreenHeight()` for screen dimensions
+- Added `System.getScreenSize()` to get width and height together
+- Added `System.getOS()` and `System.getOSInfo()` for operating system details
+- Added `System.getDisplayServer()` to detect X11 or Wayland
+- Added `System.isX11()` and `System.isWayland()` helpers
+- Added `System.getDesktopEnvironment()` to detect DE (GNOME, KDE, etc.)
+- Added `System.getMemoryInfo()` for RAM statistics
+- Added `System.getCPUInfo()` for processor information
+- Added `System.getUptime()` for system uptime
+- System info now displayed in test suite startup
 
 ### v0.7.1
 - **Performance Optimizations:**

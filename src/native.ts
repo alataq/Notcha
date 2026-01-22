@@ -149,6 +149,15 @@ function ensureLib() {
                 args: [FFIType.cstring],
                 returns: FFIType.bool,
             },
+            // System functions
+            getScreenWidth: {
+                args: [],
+                returns: FFIType.i32,
+            },
+            getScreenHeight: {
+                args: [],
+                returns: FFIType.i32,
+            },
         });
     } catch (e) {
         console.error("Failed to load native library:", e);
@@ -343,6 +352,16 @@ export function playAudioFile(filePath: string): boolean {
     return l.symbols.playAudioFile(buffer);
 }
 
+export function getScreenWidth(): number {
+    const l = ensureLib();
+    return l.symbols.getScreenWidth();
+}
+
+export function getScreenHeight(): number {
+    const l = ensureLib();
+    return l.symbols.getScreenHeight();
+}
+
 export const native = {
     initDisplay,
     closeDisplay,
@@ -375,4 +394,6 @@ export const native = {
     playSuccess,
     playError,
     playAudioFile,
+    getScreenWidth,
+    getScreenHeight,
 };
