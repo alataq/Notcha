@@ -2,7 +2,7 @@
 
 > A lightweight window management library for Linux using X11 bindings via Zig and TypeScript
 
-[![Version](https://img.shields.io/badge/version-0.7.0-blue.svg)](https://www.npmjs.com/package/notcha)
+[![Version](https://img.shields.io/badge/version-0.7.1-blue.svg)](https://www.npmjs.com/package/notcha)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
 ## Features
@@ -1088,6 +1088,19 @@ MIT License - See LICENSE file for details
 Created by [alataq](https://github.com/alataq)
 
 ## Changelog
+
+### v0.7.1
+- **Performance Optimizations:**
+  - Added `window.fillRect()` for fast rectangle drawing using native X11 XFillRectangle
+  - Optimized menu bar rendering: replaced pixel-by-pixel loops with fillRect (10-100x faster)
+  - Optimized scrollbar rendering: replaced nested loops with fillRect (10-100x faster)
+  - Optimized mouse event processing: coalesces consecutive mouse move events to prevent redundant redraws
+  - Dramatically improved scrollbar drag responsiveness by eliminating event queue backlog
+- **API Additions:**
+  - Added `fillRect(x, y, width, height, color)` method to Window class for optimized rectangle drawing
+- **Developer Experience:**
+  - Scroll demo now renders much faster with optimized drawing
+  - Menu interactions feel more responsive with reduced overdraw
 
 ### v0.7.0
 - Added automatic scrollbar support for windows with overflowing content

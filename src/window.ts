@@ -97,6 +97,16 @@ export class Window {
         return this;
     }
 
+    fillRect(x: number, y: number, width: number, height: number, color: number): Window {
+        if (this.windowHandle === null) {
+            console.warn("Cannot fill rectangle: window is not open");
+            return this;
+        }
+        
+        native.fillRect(this.windowHandle, x, y, width, height, color);
+        return this;
+    }
+
     close() {
         if (this.windowHandle !== null) {
             native.destroyWindow(this.windowHandle);
@@ -235,6 +245,7 @@ export class Window {
         if (this.menuBar && this.windowHandle !== null) {
             this.menuBar.draw(
                 (x, y, color) => this.draw(x, y, color),
+                (x, y, width, height, color) => this.fillRect(x, y, width, height, color),
                 (x, y, text, color, size) => this.write(x, y, text, color, size),
                 this.width,
                 this.height
@@ -358,6 +369,7 @@ export class Window {
             const menuHeight = this.getMenuBarHeight();
             this.scrollbar.draw(
                 (x, y, color) => this.draw(x, y, color),
+                (x, y, width, height, color) => this.fillRect(x, y, width, height, color),
                 this.width,
                 this.height,
                 menuHeight

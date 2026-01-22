@@ -178,7 +178,8 @@ export class Scrollbar {
     /**
      * Draw the scrollbar
      */
-    draw(drawPixel: (x: number, y: number, color: number) => void, 
+    draw(drawPixel: (x: number, y: number, color: number) => void,
+         fillRect: (x: number, y: number, width: number, height: number, color: number) => void, 
          windowWidth: number, 
          windowHeight: number,
          menuHeight: number): void {
@@ -188,12 +189,8 @@ export class Scrollbar {
         const trackY = menuHeight;
         const trackHeight = windowHeight - menuHeight;
         
-        // Draw track
-        for (let y = trackY; y < windowHeight; y++) {
-            for (let x = trackX; x < windowWidth; x++) {
-                drawPixel(x, y, this.TRACK_COLOR);
-            }
-        }
+        // Draw track using fillRect for better performance
+        fillRect(trackX, trackY, this.SCROLLBAR_WIDTH, trackHeight, this.TRACK_COLOR);
         
         // Draw thumb
         const thumb = this.getThumbBounds(windowWidth, windowHeight, menuHeight);
@@ -204,11 +201,8 @@ export class Scrollbar {
             thumbColor = this.THUMB_HOVER_COLOR;
         }
         
-        for (let y = thumb.y; y < thumb.y + thumb.height && y < windowHeight; y++) {
-            for (let x = thumb.x; x < windowWidth; x++) {
-                drawPixel(x, y, thumbColor);
-            }
-        }
+        const thumbHeight = Math.min(thumb.height, windowHeight - thumb.y);
+        fillRect(thumb.x, thumb.y, this.SCROLLBAR_WIDTH, thumbHeight, thumbColor);
     }
 
     /**

@@ -54,6 +54,10 @@ function ensureLib() {
                 args: [FFIType.u64, FFIType.i32, FFIType.i32, FFIType.cstring, FFIType.u64, FFIType.i32],
                 returns: FFIType.void,
             },
+            fillRect: {
+                args: [FFIType.u64, FFIType.i32, FFIType.i32, FFIType.i32, FFIType.i32, FFIType.u64],
+                returns: FFIType.void,
+            },
             checkWindowClosed: {
                 args: [FFIType.u64],
                 returns: FFIType.bool,
@@ -194,6 +198,11 @@ export function setBackground(win: bigint, color: number): void {
 export function drawText(win: bigint, x: number, y: number, text: string, color: number, size: number = 2): void {
     const l = ensureLib();
     l.symbols.drawText(win, x, y, Buffer.from(text + "\0", "utf-8"), BigInt(color), size);
+}
+
+export function fillRect(win: bigint, x: number, y: number, width: number, height: number, color: number): void {
+    const l = ensureLib();
+    l.symbols.fillRect(win, x, y, width, height, BigInt(color));
 }
 
 export function checkWindowClosed(win: bigint): boolean {
@@ -343,6 +352,7 @@ export const native = {
     destroyWindow,
     setBackground,
     drawText,
+    fillRect,
     checkWindowClosed,
     getWindowWidth,
     getWindowHeight,

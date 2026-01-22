@@ -159,16 +159,13 @@ export class MenuBar {
 
     // Draw the menu bar and active dropdown
     draw(drawPixel: (x: number, y: number, color: number) => void,
+         fillRect: (x: number, y: number, width: number, height: number, color: number) => void,
          drawText: (x: number, y: number, text: string, color: number, size?: number) => void,
          windowWidth: number,
          windowHeight: number): void {
         
-        // Draw menu bar background
-        for (let y = 0; y < this.MENU_BAR_HEIGHT; y++) {
-            for (let x = 0; x < windowWidth; x++) {
-                drawPixel(x, y, this.BG_COLOR);
-            }
-        }
+        // Draw menu bar background using fillRect
+        fillRect(0, 0, windowWidth, this.MENU_BAR_HEIGHT, this.BG_COLOR);
 
         // Draw menu bar bottom border
         for (let x = 0; x < windowWidth; x++) {
@@ -182,13 +179,9 @@ export class MenuBar {
             if (!menu) continue;
             const menuWidth = menu.label.length * 8 + this.MENU_PADDING * 2;
             
-            // Highlight active menu
+            // Highlight active menu using fillRect
             if (i === this.activeMenuIndex) {
-                for (let y = 0; y < this.MENU_BAR_HEIGHT - 1; y++) {
-                    for (let x = currentX; x < currentX + menuWidth; x++) {
-                        drawPixel(x, y, this.ACTIVE_COLOR);
-                    }
-                }
+                fillRect(currentX, 0, menuWidth, this.MENU_BAR_HEIGHT - 1, this.ACTIVE_COLOR);
             }
             
             // Draw menu label (centered vertically)
@@ -218,15 +211,22 @@ export class MenuBar {
                 dropdownHeight = maxHeight;
             }
             
-            // Draw dropdown background and border
-            for (let y = this.MENU_BAR_HEIGHT; y < this.MENU_BAR_HEIGHT + dropdownHeight && y < windowHeight; y++) {
-                for (let x = adjustedMenuX; x < adjustedMenuX + this.DROPDOWN_WIDTH && x < windowWidth; x++) {
-                    if (x === adjustedMenuX || x === adjustedMenuX + this.DROPDOWN_WIDTH - 1 ||
-                        y === this.MENU_BAR_HEIGHT || y === this.MENU_BAR_HEIGHT + dropdownHeight - 1) {
-                        drawPixel(x, y, this.BORDER_COLOR);
-                    } else {
-                        drawPixel(x, y, this.BG_COLOR);
-                    }
+            // Draw dropdown background using fillRect
+            const effectiveWidth = Math.min(this.DROPDOWN_WIDTH, windowWidth - adjustedMenuX);
+            const effectiveHeight = Math.min(dropdownHeight, windowHeight - this.MENU_BAR_HEIGHT);
+            fillRect(adjustedMenuX, this.MENU_BAR_HEIGHT, effectiveWidth, effectiveHeight, this.BG_COLOR);
+            
+            // Draw dropdown border (top, bottom, left, right)
+            for (let x = adjustedMenuX; x < adjustedMenuX + effectiveWidth && x < windowWidth; x++) {
+                drawPixel(x, this.MENU_BAR_HEIGHT, this.BORDER_COLOR); // Top
+                if (this.MENU_BAR_HEIGHT + effectiveHeight - 1 < windowHeight) {
+                    drawPixel(x, this.MENU_BAR_HEIGHT + effectiveHeight - 1, this.BORDER_COLOR); // Bottom
+                }
+            }
+            for (let y = this.MENU_BAR_HEIGHT; y < this.MENU_BAR_HEIGHT + effectiveHeight && y < windowHeight; y++) {
+                drawPixel(adjustedMenuX, y, this.BORDER_COLOR); // Left
+                if (adjustedMenuX + effectiveWidth - 1 < windowWidth) {
+                    drawPixel(adjustedMenuX + effectiveWidth - 1, y, this.BORDER_COLOR); // Right
                 }
             }
             
@@ -249,13 +249,11 @@ export class MenuBar {
                     }
                     itemY += 5;
                 } else {
-                    // Highlight hovered item
+                    // Highlight hovered item using fillRect
                     if (i === this.hoveredItemIndex && item.enabled !== false && itemY + this.MENU_ITEM_HEIGHT <= windowHeight) {
-                        for (let y = itemY + 1; y < itemY + this.MENU_ITEM_HEIGHT - 1 && y < windowHeight; y++) {
-                            for (let x = adjustedMenuX + 1; x < adjustedMenuX + this.DROPDOWN_WIDTH - 1 && x < windowWidth; x++) {
-                                drawPixel(x, y, this.HOVER_COLOR);
-                            }
-                        }
+                        const highlightWidth = Math.min(this.DROPDOWN_WIDTH - 2, windowWidth - adjustedMenuX - 2);
+                        const highlightHeight = Math.min(this.MENU_ITEM_HEIGHT - 2, windowHeight - itemY - 2);
+                        fillRect(adjustedMenuX + 1, itemY + 1, highlightWidth, highlightHeight, this.HOVER_COLOR);
                     }
                     
                     // Draw item text (centered vertically)

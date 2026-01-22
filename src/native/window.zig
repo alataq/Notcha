@@ -153,6 +153,18 @@ pub export fn drawText(win: c.Window, x: c_int, y: c_int, text: [*:0]const u8, c
         _ = c.XDrawString(d, pixmap, gc, x, y, text, @intCast(std.mem.len(text)));
     }
 }
+
+pub export fn fillRect(win: c.Window, x: c_int, y: c_int, width: c_int, height: c_int, color: c_ulong) void {
+    if (display == null) return;
+
+    const d = display orelse return;
+    const pixmap = pixmaps.get(win) orelse return;
+    const gc = c.XDefaultGC(d, screen);
+
+    _ = c.XSetForeground(d, gc, color);
+    _ = c.XFillRectangle(d, pixmap, gc, x, y, @intCast(width), @intCast(height));
+}
+
 pub export fn flushWindow(win: c.Window) void {
     if (display == null) return;
     const d = display orelse return;
