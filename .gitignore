@@ -5,6 +5,7 @@ node_modules
 out
 dist
 *.tgz
+docs/
 
 # binaries and build artifacts
 zig-out/

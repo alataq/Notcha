@@ -1,0 +1,21 @@
+{
+  "entryPoints": ["src/index.ts"],
+  "out": "docs",
+  "name": "Notcha",
+  "readme": "README.md",
+  "includeVersion": true,
+  "excludePrivate": true,
+  "excludeProtected": false,
+  "excludeExternals": true,
+  "cleanOutputDir": true,
+  "navigationLinks": {
+    "GitHub": "https://github.com/alataq/Notcha",
+    "NPM": "https://www.npmjs.com/package/notcha"
+  },
+  "categorizeByGroup": true,
+  "sort": ["source-order"],
+  "plugin": [],
+  "theme": "default",
+  "lightHighlightTheme": "light-plus",
+  "darkHighlightTheme": "dark-plus"
+}
